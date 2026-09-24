@@ -293,3 +293,5 @@ function bind(){
   const back=document.getElementById("back-result");if(back)back.onclick=()=>{state.screen="result";render()};
   const log=document.getElementById("show-log");if(log)log.onclick=()=>{state.screen="result";render()};
 }
+
+init();
