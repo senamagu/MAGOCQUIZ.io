@@ -247,7 +247,6 @@ function questionHTML(){
     <div class="question-wrap"><div class="ghost">${bg?`<img src="${esc(imgFor(bg,"fullbody"))}" alt="">`:""}</div>
     <div class="question-content"><p class="question">${esc(templateText(q))}</p>
     <div class="answers"><div class="answer-grid">${ANSWERS.map(([v,t])=>`<button class="choice" data-answer="${v}">${t}</button>`).join("")}</div></div></div></div>
-    <div class="actions"><button class="secondary" id="show-log">現在の候補を見る</button></div>
   </section>`;
 }
 function featurePool(c){
@@ -301,7 +300,6 @@ function bind(){
   const cont=document.getElementById("continue");if(cont)cont.onclick=()=>{state.screen="question";nextQuestion()};
   document.querySelectorAll("#restart").forEach(b=>b.onclick=()=>{reset();state.screen="genre";render()});
   const back=document.getElementById("back-result");if(back)back.onclick=()=>{state.screen="result";render()};
-  const log=document.getElementById("show-log");if(log)log.onclick=()=>{state.screen="result";render()};
 }
 
 init();
