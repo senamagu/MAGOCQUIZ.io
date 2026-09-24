@@ -221,7 +221,7 @@ function render(){
   bind();
 }
 function screenHTML(){
-  if(state.screen==="genre")return `<div class="brand">オススメキャラ診断</div><section class="panel"><h1 class="title">ジャンルを選んでください</h1><p class="muted">まずは見た目のジャンルから選ぼう。あとから質問で好みを絞っていきます。</p><div class="genre-grid">${[
+  if(state.screen==="genre")return `<div class="brand">フィップスオススメキャラ診断</div><section class="panel"><h1 class="title">ジャンルを選んでください</h1><p class="muted">まずは見た目のジャンルから選ぼう！あとから質問で好みを絞っていきます。</p><div class="genre-grid">${[
     ["all","すべて"],["humanoid","人型"],["stick","棒人間"],["other","その他"]
   ].map(([v,t])=>`<button class="choice" data-genre="${v}">${t}</button>`).join("")}</div></section>`;
   if(state.screen==="question")return questionHTML();
