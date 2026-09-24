@@ -1,8 +1,9 @@
-const state={chars:[],questions:[],templates:{},genre:"all",answers:[],asked:new Set(),history:[],scores:{},screen:"genre",current:null,questionCount:0,logs:[],resultRanks:[],selectedCharacter:null};
+const state={chars:[],questions:[],templates:{},genre:"all",answers:[],asked:new Set(),history:[],scores:{},screen:"genre",current:null,currentBg:null,questionCount:0,logs:[],blockLog:[],resultRanks:[],selectedCharacter:null};
 
 const ANSWERS=[
   ["yes","はい"],["mostlyYes","どちらかというとはい"],["neutral","どちらともいえない"],["mostlyNo","どちらかというといいえ"],["no","いいえ"]
 ];
+const ANSWER_LABELS=Object.fromEntries(ANSWERS);
 const CAT_WEIGHT={appearance:.40,alignment:.25,personality:.20,relationships:.10,likes:.05};
 const VALUE={yes:2,mostlyYes:1,neutral:0,mostlyNo:-1,no:-2};
 const appearanceFields=["species","body","face","hair","eyes","clothing","color","other"];
@@ -38,6 +39,7 @@ async function init(){
   }catch(e){document.getElementById("app").innerHTML=`<div class="app-shell"><div class="screen"><div class="error"><h2>データを読み込めませんでした</h2><p>${e.message}</p><p>GitHub Pages等のHTTP環境で開いてください。</p></div></div></div>`}
 }
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
 function imgFor(c,type){return c.images?.[type]||""}
 function eligible(c){
   if(state.genre==="all") return true;
@@ -186,23 +188,32 @@ function backgroundFor(q){
 function nextQuestion(){
   const q=pickQuestion(); state.current=q; state.asked.add(q.id);
   state.history.push(q);
+  state.currentBg=backgroundFor(q);
   render();
 }
 function snapshotLog(){
   const ranks=ranked();
-  state.logs.push({answers:state.answers.slice(-20),history:state.history.slice(-20),ranks:ranks.slice(0,5)});
+  state.logs.push({ranks:ranks.slice(0,5),entries:state.blockLog,blockSize:state.blockLog.length});
+  state.blockLog=[];
   state.resultRanks=ranks;
 }
 function answer(ans){
   const q=state.current;
   state.answers.push({q:q.id,answer:ans});
+  state.blockLog.push({
+    index:state.blockLog.length+1,
+    question:templateText(q),
+    answer:ANSWER_LABELS[ans]||ans,
+    bgId:state.currentBg?state.currentBg.id:null
+  });
   applyEffects(q,ans);
   state.questionCount++;
   if(state.questionCount % 20 === 0){ snapshotLog(); state.screen="result"; render(); return; }
   nextQuestion();
 }
 function reset(){
-  state.answers=[];state.asked=new Set();state.history=[];state.scores={};state.current=null;state.questionCount=0;state.logs=[];state.resultRanks=[];state.selectedCharacter=null;
+  state.answers=[];state.asked=new Set();state.history=[];state.scores={};state.current=null;state.currentBg=null;
+  state.questionCount=0;state.logs=[];state.blockLog=[];state.resultRanks=[];state.selectedCharacter=null;
 }
 function render(){
   const app=document.getElementById("app");
@@ -219,8 +230,8 @@ function screenHTML(){
   return "";
 }
 function questionHTML(){
-  const q=state.current||pickQuestion(); if(!state.current)state.current=q;
-  const bg=backgroundFor(q);
+  const q=state.current||pickQuestion(); if(!state.current){state.current=q;state.currentBg=backgroundFor(q);}
+  const bg=state.currentBg;
   return `<div class="brand">オススメキャラ診断</div><section class="panel">
     <div class="progress">質問 ${state.answers.length+1}　／　候補 ${candidates().length}人</div>
     <div class="question-wrap"><div class="ghost">${bg?`<img src="${esc(imgFor(bg,"fullbody"))}" alt="">`:""}</div>
@@ -239,9 +250,33 @@ function featurePool(c){
   const seen=new Set();
   return out.sort((a,b)=>b.score-a.score).filter(x=>!seen.has(x.label)&&seen.add(x.label)).slice(0,5).map(x=>x.label);
 }
+function logBlockHTML(log,blockIdx){
+  const total=log.blockSize||log.entries.length;
+  const rankLine=log.ranks.slice(0,3).map(c=>`${esc(c.name)} ${Math.round(c.score)}%`).join(" / ");
+  const entries=log.entries.map(e=>{
+    const bg=e.bgId?state.chars.find(c=>c.id===e.bgId):null;
+    return `<div class="log-entry">
+      <div class="log-entry-top">
+        <div class="log-index">${e.index}/${total}</div>
+      </div>
+      <div class="log-entry-body">
+        ${bg?`<img class="log-bg-thumb" src="${esc(imgFor(bg,"bust"))}" alt="">`:`<div class="log-bg-thumb log-bg-thumb--empty"></div>`}
+        <div class="log-entry-text">
+          <div class="log-question">${esc(e.question).replace(/\n/g,"<br>")}</div>
+          <div class="log-answer">▶${esc(e.answer)}</div>
+        </div>
+      </div>
+      ${bg?`<button class="pill-btn" data-log-bg="${esc(bg.id)}">背景キャラの詳細を見る</button>`:""}
+    </div>`;
+  }).join("");
+  return `<div class="log-block">
+    <div class="log-block-head"><strong>${blockIdx+1}回目（${(blockIdx+1)*20}問まで）</strong><div class="muted">${esc(rankLine)}</div></div>
+    ${entries}
+  </div>`;
+}
 function resultHTML(){
   const r=state.resultRanks.length?state.resultRanks:ranked(),top=r[0];
-  return `<div class="brand">診断結果</div><section class="panel"><div class="result-top"><div class="winner-art">${top&&imgFor(top,"fullbody")?`<img src="${esc(imgFor(top,"fullbody"))}" alt="">`:""}</div><div class="result-info"><div class="muted">あなたにオススメのキャラ</div><div class="result-reading">${esc(top?.reading||"")}</div><h1 class="title">${esc(top?.name||"該当なし")}</h1><div class="percent">${top?Math.round(top.score):0}%</div><p>${esc(top?.profile?.description||"")}</p>${top?`<div class="match-features"><strong>特に好みが一致した特徴</strong><ul>${featurePool(top).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}<div class="actions">${top?`<button class="primary" id="detail">詳細を見る</button>`:""}<button class="secondary" id="continue">診断を続ける</button><button class="secondary" id="restart">もう一度診断する</button></div></div></div><h2 class="title" style="margin-top:28px">その他のおすすめ</h2><div class="rank-list">${r.slice(1,6).map(c=>`<div class="rank clickable" data-rank-id="${esc(c.id)}"><img src="${esc(imgFor(c,"bust"))}" alt=""><div><strong>${esc(c.name)}</strong><div class="muted">${esc(c.reading)}</div></div><div class="p">${Math.round(c.score)}%</div></div>`).join("")}</div>${state.logs.length?`<h2 class="title" style="margin-top:30px">診断ログ</h2><div class="log-list">${state.logs.map((log,i)=>`<div class="log-item"><div class="log-text"><strong>${i+1}回目（${(i+1)*20}問まで）</strong><div class="muted">${log.ranks.slice(0,3).map(c=>`${esc(c.name)} ${Math.round(c.score)}%`).join(" / ")}</div></div></div>`).join("")}</div>`:""}</section>`;
+  return `<div class="brand">診断結果</div><section class="panel"><div class="result-top"><div class="winner-art">${top&&imgFor(top,"fullbody")?`<img src="${esc(imgFor(top,"fullbody"))}" alt="">`:""}</div><div class="result-info"><div class="muted">あなたにオススメのキャラ</div><div class="result-reading">${esc(top?.reading||"")}</div><h1 class="title">${esc(top?.name||"該当なし")}</h1><div class="percent">${top?Math.round(top.score):0}%</div><p>${esc(top?.profile?.description||"")}</p>${top?`<div class="match-features"><strong>特に好みが一致した特徴</strong><ul>${featurePool(top).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}<div class="actions">${top?`<button class="primary" id="detail">詳細を見る</button>`:""}<button class="secondary" id="continue">診断を続ける</button><button class="secondary" id="restart">もう一度診断する</button></div></div></div><h2 class="title" style="margin-top:28px">その他のおすすめ</h2><div class="rank-list">${r.slice(1,6).map(c=>`<div class="rank clickable" data-rank-id="${esc(c.id)}"><img src="${esc(imgFor(c,"bust"))}" alt=""><div><strong>${esc(c.name)}</strong><div class="muted">${esc(c.reading)}</div></div><div class="p">${Math.round(c.score)}%</div></div>`).join("")}</div>${state.logs.length?`<h2 class="title" style="margin-top:30px">診断ログ</h2><div class="log-list">${state.logs.map((log,i)=>logBlockHTML(log,i)).join("")}</div>`:""}</section>`;
 }
 function detailHTML(){
   const top=state.selectedCharacter||state.resultRanks[0]||ranked()[0];if(!top)return "";
@@ -252,6 +287,7 @@ function bind(){
   document.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>answer(b.dataset.answer));
   const detail=document.getElementById("detail");if(detail)detail.onclick=()=>{state.selectedCharacter=state.resultRanks[0];state.screen="detail";render()};
   document.querySelectorAll("[data-rank-id]").forEach(b=>b.onclick=()=>{state.selectedCharacter=state.resultRanks.find(c=>c.id===b.dataset.rankId);state.screen="detail";render()});
+  document.querySelectorAll("[data-log-bg]").forEach(b=>b.onclick=()=>{state.selectedCharacter=state.chars.find(c=>c.id===b.dataset.logBg);state.screen="detail";render()});
   const cont=document.getElementById("continue");if(cont)cont.onclick=()=>{state.screen="question";nextQuestion()};
   document.querySelectorAll("#restart").forEach(b=>b.onclick=()=>{reset();state.screen="genre";render()});
   const back=document.getElementById("back-result");if(back)back.onclick=()=>{state.screen="result";render()};
