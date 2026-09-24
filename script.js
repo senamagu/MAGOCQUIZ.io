@@ -11,6 +11,10 @@ const personalityAxes=["EI","NS","TF","PJ","AT"];
 
 let TAG_LABELS={};
 
+function labelFor(tag){
+  return TAG_LABELS[tag]||tag;
+}
+
 async function init(){
   try{
     const [c,q,t]=await Promise.all([
@@ -77,13 +81,9 @@ function applyEffects(q,ans){
   }else{
     for(const tag of targets) setScore(tag,base);
   }
-  // Default score effects for tags can be overridden explicitly.
+
 }
 function normalizeBreaks(s){
-  // Question JSON may contain a literal "\n" (backslash + n) as an
-  // author-friendly way to mark a line break; convert it into a real
-  // newline so CSS white-space:pre-line renders it as a break instead
-  // of showing the two characters "\n" on screen.
   return String(s??"").replace(/\\n/g,"\n");
 }
 function templateText(q){
