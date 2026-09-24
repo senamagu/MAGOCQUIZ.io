@@ -1,3 +1,333 @@
-*{box-sizing:border-box}body{margin:0;background:#ffebee;color:#336d7f;font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700}button{font:inherit;color:inherit;border:0;cursor:pointer}.app-shell{min-height:100vh;padding:28px 18px 42px;display:flex;justify-content:center}.screen{width:min(920px,100%)}.brand{font-family:"LINE Seed JP",sans-serif;font-size:clamp(28px,5vw,46px);text-align:center;margin:4px 0 26px}.panel{background:#fff;border:0;border-radius:24px;padding:24px;box-shadow:none}.title{font-family:"LINE Seed JP",sans-serif;font-size:28px;margin:0 0 18px}.muted{opacity:.78}.genre-grid,.answer-grid{display:grid;gap:12px}.genre-grid{grid-template-columns:repeat(2,1fr)}.answer-grid{grid-template-columns:repeat(5,1fr)}.choice{min-height:70px;padding:12px;border:3px solid #336d7f;border-radius:16px;background:#c8e6c9;font-weight:900}.choice:hover{transform:translateY(-2px);background:#66bb6a}.question-wrap{position:relative;min-height:540px;overflow:hidden;border-radius:22px;background:#f7fff8;border:0}.ghost{position:absolute;right:0;top:0;bottom:0;width:52%;display:flex;justify-content:flex-end;align-items:center;opacity:.14;pointer-events:none;overflow:hidden}.ghost img{height:100%;width:auto;max-width:none;object-fit:contain;object-position:right center}.question-content{position:relative;z-index:1;min-height:540px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:32px}.question{font-family:"LINE Seed JP",sans-serif;font-size:clamp(30px,6vw,54px);line-height:1.45;text-align:center;white-space:pre-line;margin:0 0 34px;min-height:170px;display:flex;align-items:center;justify-content:center}.progress{font-size:14px;margin-bottom:12px}.answers{width:100%;min-height:118px;display:flex;align-items:center}.answer-grid .choice{background:#fff}.answer-grid .choice:nth-child(3){background:#c8e6c9}.result-top{display:grid;grid-template-columns:1.05fr .95fr;gap:22px;align-items:stretch}.winner-art{min-height:480px;border-radius:20px;background:transparent;border:0;display:flex;align-items:end;justify-content:center;overflow:hidden}.winner-art img{max-width:100%;max-height:520px;object-fit:contain}.result-info{display:flex;flex-direction:column;justify-content:center}.percent{font-family:"LINE Seed JP";font-size:58px;line-height:1}.rank-list{display:grid;gap:10px;margin-top:20px}.rank{display:grid;grid-template-columns:72px 1fr 74px;align-items:center;gap:10px;padding:10px;border:2px solid #c8e6c9;border-radius:14px;background:#fff}.rank img{width:72px;height:72px;object-fit:cover;border-radius:10px;background:#f7fff8}.rank .p{font-family:"LINE Seed JP";text-align:right}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.primary,.secondary{padding:13px 20px;border-radius:14px;border:3px solid #336d7f;font-weight:900}.primary{background:#66bb6a}.secondary{background:#fff}.detail{display:grid;grid-template-columns:1fr 1fr;gap:20px}.detail-art{background:transparent;border:0;border-radius:18px;display:flex;align-items:end;justify-content:center;min-height:520px;overflow:hidden}.detail-art img{max-width:100%;max-height:560px;object-fit:contain}.profile dl{display:grid;grid-template-columns:90px 1fr;gap:8px;margin:0}.profile dt{font-weight:900}.profile dd{margin:0}.chips{display:flex;flex-wrap:wrap;gap:7px}.chip{padding:5px 9px;border-radius:999px;background:#c8e6c9}.log-list{display:grid;gap:12px}.log-item{position:relative;overflow:hidden;min-height:100px;border:2px solid #c8e6c9;border-radius:16px;padding:14px;background:#fff}.log-bg{position:absolute;right:10px;bottom:-12px;height:130px;opacity:.12}.log-text{position:relative;z-index:1}.error{padding:20px;background:#fff;border:3px solid #336d7f;border-radius:18px}@media(max-width:700px){.answer-grid{grid-template-columns:1fr 1fr}.result-top,.detail{grid-template-columns:1fr}.winner-art,.detail-art{min-height:360px}.winner-art img,.detail-art img{max-height:360px}.genre-grid{grid-template-columns:1fr}.question-wrap,.question-content{min-height:500px}}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#ffebee;
+  color:#336d7f;
+  font-family:"Zen Kaku Gothic New",sans-serif;
+  font-weight:700;
+}
+button{
+  font:inherit;
+  color:inherit;
+  border:0;
+  cursor:pointer;
+}
 
-.result-reading,.detail-reading{font-size:14px;opacity:.7;margin-bottom:2px}.match-features{margin-top:18px}.match-features ul{margin:8px 0 0;padding-left:20px}.rank.clickable{cursor:pointer}.rank.clickable:hover{background:#f7fff8}
+/* アプリ全体シェル */
+.app-shell{
+  min-height:100vh;
+  padding:28px 18px 42px;
+  display:flex;
+  justify-content:center;
+}
+.screen{
+  width:min(920px,100%);
+}
+.brand{
+  font-family:"LINE Seed JP",sans-serif;
+  font-size:clamp(28px,5vw,46px);
+  text-align:center;
+  margin:4px 0 26px;
+}
+
+/* 大枠のパネル（枠線・シャドウなし） */
+.panel{
+  background:#fff;
+  border:0;
+  border-radius:24px;
+  padding:24px;
+  box-shadow:none;
+}
+.title{
+  font-family:"LINE Seed JP",sans-serif;
+  font-size:28px;
+  margin:0 0 18px;
+}
+.muted{
+  opacity:.78;
+}
+
+/* ジャンル選択 */
+.genre-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+.choice{
+  min-height:70px;
+  padding:12px;
+  border:3px solid #336d7f;
+  border-radius:16px;
+  background:#c8e6c9;
+  font-weight:900;
+  transition:transform 0.1s ease;
+}
+.choice:hover{
+  transform:translateY(-2px);
+  background:#66bb6a;
+}
+
+/* 診断質問エリア（枠線なし、高さ固定領域） */
+.question-wrap{
+  position:relative;
+  min-height:560px;
+  overflow:hidden;
+  border-radius:22px;
+  background:#f7fff8;
+  border:0;
+}
+
+/* 背景キャラクター（右側へ大きく、表示枠いっぱいに配置） */
+.ghost{
+  position:absolute;
+  right:0;
+  top:0;
+  bottom:0;
+  width:60%;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  opacity:0.20;
+  pointer-events:none;
+  overflow:hidden;
+}
+.ghost img{
+  height:100%;
+  width:auto;
+  max-width:none;
+  object-fit:contain;
+  object-position:right center;
+}
+
+/* 質問コンテンツ構造 */
+.question-content{
+  position:relative;
+  z-index:1;
+  min-height:560px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:32px 24px;
+}
+
+/* 質問文固定領域（文字数で回答ボタンの位置がブレない） */
+.question-area{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:220px;
+}
+.question{
+  font-family:"LINE Seed JP",sans-serif;
+  font-size:clamp(26px,5vw,46px);
+  line-height:1.45;
+  text-align:center;
+  white-space:pre-line;
+  margin:0;
+}
+.progress{
+  font-size:14px;
+  margin-bottom:8px;
+}
+
+/* 回答ボタンエリア */
+.answers{
+  width:100%;
+  min-height:120px;
+  display:flex;
+  align-items:center;
+}
+.answer-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  width:100%;
+}
+.answer-grid .choice{
+  background:#fff;
+}
+.answer-grid .choice:nth-child(3){
+  background:#c8e6c9;
+}
+
+/* 結果画面 */
+.result-top{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:22px;
+  align-items:stretch;
+}
+
+/* 全身画像表示エリア（枠線・背景色なし） */
+.winner-art, .detail-art{
+  min-height:480px;
+  border-radius:0;
+  background:transparent;
+  border:0;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  overflow:hidden;
+}
+.winner-art img, .detail-art img{
+  max-width:100%;
+  max-height:520px;
+  object-fit:contain;
+}
+
+.result-info{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.result-reading, .detail-reading{
+  font-size:15px;
+  opacity:.75;
+  margin-bottom:2px;
+}
+.percent{
+  font-family:"LINE Seed JP";
+  font-size:58px;
+  line-height:1;
+  margin:8px 0;
+}
+
+/* 特徴リスト・チップ */
+.match-features{
+  margin-top:16px;
+  background:#f7fff8;
+  padding:14px 18px;
+  border-radius:14px;
+}
+.match-features ul{
+  margin:6px 0 0;
+  padding-left:20px;
+}
+.chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.chip{
+  padding:6px 12px;
+  border-radius:999px;
+  background:#c8e6c9;
+  font-size:14px;
+}
+
+/* ランキングリスト（2位以下） */
+.rank-list{
+  display:grid;
+  gap:10px;
+  margin-top:16px;
+}
+.rank{
+  display:grid;
+  grid-template-columns:72px 1fr 74px;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border-radius:14px;
+  background:#f7fff8;
+}
+.rank.clickable{
+  cursor:pointer;
+  transition:background 0.15s ease;
+}
+.rank.clickable:hover{
+  background:#c8e6c9;
+}
+.rank img{
+  width:72px;
+  height:72px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.rank .p{
+  font-family:"LINE Seed JP";
+  text-align:right;
+  font-size:20px;
+}
+
+/* ボタン類 */
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+.primary, .secondary{
+  padding:13px 20px;
+  border-radius:14px;
+  border:3px solid #336d7f;
+  font-weight:900;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.primary{ background:#66bb6a; }
+.secondary{ background:#fff; }
+
+/* 詳細画面 */
+.detail{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+.profile dl{
+  display:grid;
+  grid-template-columns:90px 1fr;
+  gap:8px;
+  margin:16px 0 0;
+}
+.profile dt{ font-weight:900; }
+.profile dd{ margin:0; }
+
+/* 診断ログ */
+.log-list{
+  display:grid;
+  gap:12px;
+  margin-top:16px;
+}
+.log-item{
+  position:relative;
+  overflow:hidden;
+  min-height:90px;
+  border-radius:16px;
+  padding:16px;
+  background:#f7fff8;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.log-bg{
+  position:absolute;
+  right:10px;
+  bottom:-10px;
+  height:120px;
+  opacity:.15;
+  pointer-events:none;
+}
+.log-text{
+  position:relative;
+  z-index:1;
+}
+
+.error{
+  padding:20px;
+  background:#fff;
+  border:3px solid #336d7f;
+  border-radius:18px;
+}
+
+@media(max-width:700px){
+  .answer-grid{ grid-template-columns:1fr 1fr; }
+  .result-top, .detail{ grid-template-columns:1fr; }
+  .winner-art, .detail-art{ min-height:360px; }
+  .winner-art img, .detail-art img{ max-height:360px; }
+  .genre-grid{ grid-template-columns:1fr; }
+  .question-wrap, .question-content{ min-height:500px; }
+  .ghost{ width:80%; }
+}
