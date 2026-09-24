@@ -9,35 +9,39 @@ const VALUE={yes:2,mostlyYes:1,neutral:0,mostlyNo:-1,no:-2};
 const appearanceFields=["species","body","face","hair","eyes","clothing","color","other"];
 const personalityAxes=["EI","NS","TF","PJ","AT"];
 
-// Internal tag IDs must never be shown to the user (see 修正案:
-// 詳細画面の内部ID表示をなくす). This maps every tag ID used in
-// characters.json / questions.json to a Japanese display label.
-const TAG_LABELS={
-  human:"人間",nonhuman:"人外",humanoid:"人型人外",stick:"棒人間",
-  tall:"高身長",slim:"細身",small:"小柄",cute:"かわいい",muscular:"筋肉",adult_face:"大人顔",young:"童顔",
-  cool:"クール",handsome:"イケメン",bad_looking:"人相が悪い",
-  blunt_bangs:"ぱっつん",long_hair:"長髪",short_hair:"短髪",hime_cut:"姫カット",
-  sharp_eyes:"ツリ目",round_eyes:"丸目",droopy_eyes:"タレ目",
-  glasses:"眼鏡",black_clothes:"黒い服",ribbon:"リボン",coat:"コート",earrings:"ピアス",dress:"ドレス",
-  blue:"青色",white:"白色",black:"黒色",yellow:"黄色",green:"緑色",red:"赤色",pink:"ピンク色",
-  scar:"傷",tail:"しっぽ",
-  confident:"自信家",caring:"面倒見がいい",quiet:"物静か",reliable:"頼れる",cheerful:"元気",
-  friendly:"人懐っこい",energetic:"エネルギッシュ",rough:"荒っぽい",playful:"遊び好き",kind:"優しい",intelligent:"知的",
-  protective:"守ってくれる",companion:"相棒気質",wants_to_be_protected:"守られたい",teasing:"からかい好き",
-  rival:"ライバル気質",partner:"パートナー気質",
-  cat:"猫好き",sweets:"甘いもの好き",games:"ゲーム好き",coffee:"コーヒー好き",festival:"お祭り好き",
-  gambling:"勝負事好き",bar:"酒場好き",books:"読書好き",tea:"紅茶好き"
-};
-function labelFor(tag){return TAG_LABELS[tag]||tag;}
+let TAG_LABELS={};
 
 async function init(){
   try{
-    const [c,q]=await Promise.all([fetch("data/characters.json"),fetch("data/questions.json")]);
-    const cd=await c.json(), qd=await q.json();
-    state.chars=cd.characters; state.questions=qd.questions; state.templates=qd.templates;
+    const [c,q,t]=await Promise.all([
+      fetch("data/characters.json"),
+      fetch("data/questions.json"),
+      fetch("data/tag_labels.json")
+    ]);
+
+    const cd=await c.json();
+    const qd=await q.json();
+    TAG_LABELS=await t.json();
+
+    state.chars=cd.characters;
+    state.questions=qd.questions;
+    state.templates=qd.templates;
+
     render();
-  }catch(e){document.getElementById("app").innerHTML=`<div class="app-shell"><div class="screen"><div class="error"><h2>データを読み込めませんでした</h2><p>${e.message}</p><p>GitHub Pages等のHTTP環境で開いてください。</p></div></div></div>`}
+  }catch(e){
+    document.getElementById("app").innerHTML=`
+      <div class="app-shell">
+        <div class="screen">
+          <div class="error">
+            <h2>データを読み込めませんでした</h2>
+            <p>${e.message}</p>
+            <p>GitHub Pages等のHTTP環境で開いてください。</p>
+          </div>
+        </div>
+      </div>`;
+  }
 }
+
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));}
 function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0;}
 function imgFor(c,type){return c.images?.[type]||""}
