@@ -197,7 +197,13 @@ function nextQuestion(){
 }
 function snapshotLog(){
   const ranks=ranked();
-  state.logs.push({ranks:ranks.slice(0,5),entries:state.blockLog,blockSize:state.blockLog.length});
+
+  state.logs=[{
+    ranks:ranks.slice(0,5),
+    entries:state.blockLog,
+    blockSize:state.blockLog.length
+  }];
+
   state.blockLog=[];
   state.resultRanks=ranks;
 }
