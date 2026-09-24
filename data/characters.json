@@ -81,8 +81,8 @@
       "name": "レン",
       "reading": "れん",
       "images": {
-        "fullbody": "images/full/ren.png",
-        "bust": "images/bust/ren.png"
+        "fullbody": "images/bust/unteisyako-full.png",
+        "bust": "images/bust/unteisyako-bust.png"
       },
       "profile": {
         "gender": "男性",
