@@ -411,7 +411,7 @@ function questionHTML() {
   const bgImg = bg ? (imgFor(bg, "fullbody") || imgFor(bg, "bust")) : "";
 
   return `
-    <div class="brand">オススメキャラ診断</div>
+    <div class="brand">フィップスオススメキャラ診断</div>
     <section class="panel">
       <div class="progress">質問 ${state.answers.length + 1} 問目 ／ 対象候補 ${candidates().length}人</div>
       <div class="question-wrap">
