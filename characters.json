@@ -1,0 +1,381 @@
+{
+  "characters": [
+    {
+      "id": "mika",
+      "name": "ミカ",
+      "reading": "みか",
+      "images": {
+        "fullbody": "images/full/mika.png",
+        "bust": "images/bust/mika.png"
+      },
+      "profile": {
+        "gender": "女性",
+        "height": "165cm",
+        "age": "20歳",
+        "likes": [
+          "猫",
+          "甘いもの"
+        ],
+        "dislikes": [
+          "虫"
+        ],
+        "firstPerson": "私",
+        "secondPerson": [
+          "あなた"
+        ],
+        "description": "自信家で面倒見のよい、ぱっつん髪の女性。"
+      },
+      "appearance": {
+        "species": [
+          "human"
+        ],
+        "body": [
+          "tall",
+          "slim"
+        ],
+        "face": [
+          "cool"
+        ],
+        "hair": [
+          "blunt_bangs",
+          "long_hair"
+        ],
+        "eyes": [
+          "sharp_eyes"
+        ],
+        "clothing": [
+          "glasses"
+        ],
+        "color": [
+          "blue",
+          "white"
+        ],
+        "other": [
+          "scar"
+        ]
+      },
+      "personality": {
+        "EI": 3,
+        "NS": 1,
+        "TF": 3,
+        "PJ": 2,
+        "AT": 4,
+        "tags": [
+          "confident",
+          "cool",
+          "caring"
+        ]
+      },
+      "alignment": 4,
+      "relationships": [
+        "protective",
+        "reliable"
+      ],
+      "likesTags": [
+        "cat",
+        "sweets"
+      ]
+    },
+    {
+      "id": "ren",
+      "name": "レン",
+      "reading": "れん",
+      "images": {
+        "fullbody": "images/full/ren.png",
+        "bust": "images/bust/ren.png"
+      },
+      "profile": {
+        "gender": "男性",
+        "height": "180cm",
+        "age": "24歳",
+        "likes": [
+          "ゲーム",
+          "コーヒー"
+        ],
+        "dislikes": [
+          "騒音"
+        ],
+        "firstPerson": "俺",
+        "secondPerson": [
+          "お前"
+        ],
+        "description": "無口でクールだが、信頼した相手には甘い青年。"
+      },
+      "appearance": {
+        "species": [
+          "human"
+        ],
+        "body": [
+          "tall",
+          "slim"
+        ],
+        "face": [
+          "cool"
+        ],
+        "hair": [
+          "short_hair"
+        ],
+        "eyes": [
+          "sharp_eyes"
+        ],
+        "clothing": [
+          "black_clothes"
+        ],
+        "color": [
+          "black",
+          "blue"
+        ],
+        "other": []
+      },
+      "personality": {
+        "EI": -3,
+        "NS": 1,
+        "TF": 4,
+        "PJ": 3,
+        "AT": 2,
+        "tags": [
+          "cool",
+          "quiet",
+          "reliable"
+        ]
+      },
+      "alignment": 2,
+      "relationships": [
+        "protective",
+        "partner"
+      ],
+      "likesTags": [
+        "games",
+        "coffee"
+      ]
+    },
+    {
+      "id": "poko",
+      "name": "ポコ",
+      "reading": "ぽこ",
+      "images": {
+        "fullbody": "images/full/poko.png",
+        "bust": "images/bust/poko.png"
+      },
+      "profile": {
+        "gender": "不明",
+        "height": "145cm",
+        "age": "不明",
+        "likes": [
+          "猫",
+          "お祭り"
+        ],
+        "dislikes": [
+          "静かな場所"
+        ],
+        "firstPerson": "ぼく",
+        "secondPerson": [
+          "きみ"
+        ],
+        "description": "元気いっぱいで人懐っこい、小柄な人外。"
+      },
+      "appearance": {
+        "species": [
+          "nonhuman",
+          "humanoid"
+        ],
+        "body": [
+          "small",
+          "cute"
+        ],
+        "face": [
+          "cute"
+        ],
+        "hair": [
+          "short_hair"
+        ],
+        "eyes": [
+          "round_eyes"
+        ],
+        "clothing": [
+          "ribbon"
+        ],
+        "color": [
+          "yellow",
+          "green"
+        ],
+        "other": [
+          "tail"
+        ]
+      },
+      "personality": {
+        "EI": 5,
+        "NS": 3,
+        "TF": 1,
+        "PJ": -2,
+        "AT": 1,
+        "tags": [
+          "cheerful",
+          "friendly",
+          "energetic"
+        ]
+      },
+      "alignment": 3,
+      "relationships": [
+        "companion",
+        "wants_to_be_protected"
+      ],
+      "likesTags": [
+        "cat",
+        "festival"
+      ]
+    },
+    {
+      "id": "kuro",
+      "name": "クロ",
+      "reading": "くろ",
+      "images": {
+        "fullbody": "images/full/kuro.png",
+        "bust": "images/bust/kuro.png"
+      },
+      "profile": {
+        "gender": "男性",
+        "height": "172cm",
+        "age": "29歳",
+        "likes": [
+          "酒場",
+          "勝負事"
+        ],
+        "dislikes": [
+          "正義感の強い人"
+        ],
+        "firstPerson": "俺",
+        "secondPerson": [
+          "あんた"
+        ],
+        "description": "悪事も笑ってこなす、口の悪いヴィラン気質の男。"
+      },
+      "appearance": {
+        "species": [
+          "human"
+        ],
+        "body": [
+          "muscular",
+          "adult_face"
+        ],
+        "face": [
+          "handsome",
+          "bad_looking"
+        ],
+        "hair": [
+          "short_hair"
+        ],
+        "eyes": [
+          "sharp_eyes"
+        ],
+        "clothing": [
+          "coat",
+          "earrings"
+        ],
+        "color": [
+          "red",
+          "black"
+        ],
+        "other": [
+          "scar"
+        ]
+      },
+      "personality": {
+        "EI": 2,
+        "NS": 2,
+        "TF": 4,
+        "PJ": -1,
+        "AT": 3,
+        "tags": [
+          "confident",
+          "rough",
+          "playful"
+        ]
+      },
+      "alignment": -4,
+      "relationships": [
+        "teasing",
+        "rival"
+      ],
+      "likesTags": [
+        "gambling",
+        "bar"
+      ]
+    },
+    {
+      "id": "shiro",
+      "name": "シロ",
+      "reading": "しろ",
+      "images": {
+        "fullbody": "images/full/shiro.png",
+        "bust": "images/bust/shiro.png"
+      },
+      "profile": {
+        "gender": "女性",
+        "height": "158cm",
+        "age": "18歳",
+        "likes": [
+          "本",
+          "紅茶"
+        ],
+        "dislikes": [
+          "争い"
+        ],
+        "firstPerson": "私",
+        "secondPerson": [
+          "あなた"
+        ],
+        "description": "物静かで知的。困っている人を放っておけない少女。"
+      },
+      "appearance": {
+        "species": [
+          "human"
+        ],
+        "body": [
+          "slim",
+          "young"
+        ],
+        "face": [
+          "cute"
+        ],
+        "hair": [
+          "long_hair",
+          "hime_cut"
+        ],
+        "eyes": [
+          "droopy_eyes"
+        ],
+        "clothing": [
+          "ribbon",
+          "dress"
+        ],
+        "color": [
+          "white",
+          "pink"
+        ],
+        "other": []
+      },
+      "personality": {
+        "EI": -4,
+        "NS": 4,
+        "TF": 2,
+        "PJ": 4,
+        "AT": -1,
+        "tags": [
+          "quiet",
+          "kind",
+          "intelligent"
+        ]
+      },
+      "alignment": 5,
+      "relationships": [
+        "wants_to_be_protected",
+        "caring"
+      ],
+      "likesTags": [
+        "books",
+        "tea"
+      ]
+    }
+  ]
+}
