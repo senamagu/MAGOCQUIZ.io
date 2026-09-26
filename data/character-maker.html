@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>キャラクターメーカー</title>
+<style>
+:root{
+  --bg:#faf8f4; --panel:#fff; --ink:#2b2620; --sub:#6b6255; --line:#e4ddd0;
+  --accent:#3d5a4a; --accent-ink:#fff; --danger:#a4483a; --chip:#eef1ec;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1a17; --panel:#262320; --ink:#ece6db; --sub:#a89f8e; --line:#3a352e;
+    --accent:#7fae95; --accent-ink:#12211b; --danger:#e08a7a; --chip:#33302a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1a17; --panel:#262320; --ink:#ece6db; --sub:#a89f8e; --line:#3a352e;
+  --accent:#7fae95; --accent-ink:#12211b; --danger:#e08a7a; --chip:#33302a;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",system-ui,sans-serif;}
+body{min-height:100%;}
+h1{font-size:1.25rem;font-weight:600;margin:0;}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.toolrow{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:6px;cursor:pointer;}
+button:hover{border-color:var(--accent);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+button.danger{color:var(--danger);border-color:var(--danger);}
+button.small{padding:4px 8px;font-size:.8rem;}
+.file-btn{position:relative;overflow:hidden;}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px;}
+.status{font-size:.85rem;color:var(--sub);min-height:1.2em;padding:0 16px;}
+.search{width:100%;max-width:360px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;}
+.list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
+.list-item{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);}
+.list-item:hover{border-color:var(--accent);}
+.list-item .names{line-height:1.3;cursor:pointer;flex:1;}
+.list-item .reading{font-size:.8rem;color:var(--sub);}
+.view{display:none;}
+.view.open{display:block;}
+fieldset{border:1px solid var(--line);border-radius:8px;padding:14px;margin:0 0 16px;}
+legend{padding:0 6px;font-size:.85rem;color:var(--sub);}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (max-width:600px){.grid2{grid-template-columns:1fr;}}
+label{display:block;font-size:.8rem;color:var(--sub);margin-bottom:3px;margin-top:8px;}
+input[type=text],input[type=number],textarea{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;}
+textarea{resize:vertical;min-height:70px;font-family:inherit;}
+.pathrow{display:flex;gap:6px;}
+.pathrow input{flex:1;}
+.range-row{display:flex;align-items:center;gap:8px;}
+.range-row input[type=range]{flex:1;}
+.range-row output{width:2.2em;text-align:right;font-variant-numeric:tabular-nums;}
+.tagfield{position:relative;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{background:var(--chip);border-radius:14px;padding:4px 8px 4px 10px;font-size:.85rem;display:flex;align-items:center;gap:6px;}
+.chip button{border:none;background:none;padding:0 2px;color:var(--sub);cursor:pointer;font-size:.9rem;line-height:1;}
+.suggest{position:absolute;left:0;right:0;top:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;margin-top:2px;max-height:220px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.suggest div{padding:7px 10px;cursor:pointer;font-size:.9rem;}
+.suggest div:hover,.suggest div.active{background:var(--chip);}
+.suggest .newtag{color:var(--accent);}
+.freelist{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.freelist .row{display:flex;gap:6px;}
+.freelist .row input{flex:1;}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);align-items:center;justify-content:center;z-index:20;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--panel);border-radius:10px;padding:20px;max-width:360px;width:90%;}
+.hint{font-size:.75rem;color:var(--sub);margin-top:2px;}
+hr.sep{border:none;border-top:1px solid var(--line);margin:18px 0;}
+.tagrow{display:flex;gap:6px;align-items:center;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:6px;}
+.tagrow input{flex:1;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>キャラクターメーカー</h1>
+  <div class="toolrow">
+    <button id="githubReload">GitHubから再読込(../data/characters.json)</button>
+    <button class="file-btn">characters.json読込<input type="file" id="loadChars" accept=".json"></button>
+    <button id="localSave">ローカル保存</button>
+    <button id="localLoad">ローカル保存を読込</button>
+    <button id="copyChars">characters.json全コピー</button>
+    <button id="imageFilesBtn">画像ファイル一覧</button>
+  </div>
+</div>
+<div class="status" id="status"></div>
+
+<main>
+  <div class="view open" id="listView">
+    <input class="search" id="searchBox" placeholder="名前・よみがなで検索">
+    <div class="actions">
+      <button class="primary" id="newCharBtn">＋ 新規キャラクター追加</button>
+      <button id="tagListBtn">タグ一覧</button>
+    </div>
+    <div class="list" id="charList"></div>
+  </div>
+
+  <div class="view" id="editorView">
+    <button id="backBtn">← 一覧へ戻る</button>
+    <hr class="sep">
+    <fieldset>
+      <legend>基本情報</legend>
+      <div class="grid2">
+        <div><label>ID</label><input type="text" id="f_id"></div>
+        <div><label>名前</label><input type="text" id="f_name"></div>
+        <div><label>よみがな</label><input type="text" id="f_reading"></div>
+        <div>
+          <label>性別</label>
+          <input type="text" id="f_gender" list="genderList">
+          <datalist id="genderList"><option value="女性"><option value="男性"><option value="中性"><option value="その他"></datalist>
+        </div>
+        <div><label>身長</label><input type="text" id="f_height"></div>
+        <div><label>年齢</label><input type="text" id="f_age"></div>
+        <div>
+          <label>立ち絵パス</label>
+          <div class="pathrow tagfield" id="fullbodyWrap"><input type="text" id="f_fullbody" placeholder="ファイル名で検索..."></div>
+        </div>
+        <div>
+          <label>バストアップパス</label>
+          <div class="pathrow tagfield" id="bustWrap"><input type="text" id="f_bust" placeholder="ファイル名で検索..."></div>
+        </div>
+        <div><label>一人称</label><input type="text" id="f_firstPerson"></div>
+        <div><label>二人称</label><div id="f_secondPerson" class="freelist"></div></div>
+      </div>
+      <label>好き</label><div id="f_likes" class="freelist"></div>
+      <label>苦手</label><div id="f_dislikes" class="freelist"></div>
+      <label>一言説明（結果画面用）</label><textarea id="f_description"></textarea>
+      <label>詳細プロフィール</label><textarea id="f_longProfile" style="min-height:130px;"></textarea>
+    </fieldset>
+
+    <fieldset>
+      <legend>外見</legend>
+      <div id="appearanceFields"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>性格</legend>
+      <div id="personalitySliders"></div>
+      <label>性格タグ</label>
+      <div id="tagfield_personality_tags" class="tagfield"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>善悪・立場</legend>
+      <div class="range-row"><input type="range" id="f_alignment" min="-5" max="5" step="1"><output id="f_alignment_out"></output></div>
+      <div class="hint">-5=悪 0=中立 +5=善</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>関係性</legend>
+      <div id="tagfield_relationships" class="tagfield"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>好きなもの（診断用タグ）</legend>
+      <div id="tagfield_likesTags" class="tagfield"></div>
+    </fieldset>
+
+    <div class="actions">
+      <button class="primary" id="saveCharBtn">保存</button>
+      <button class="danger" id="deleteCharBtn">削除</button>
+    </div>
+  </div>
+
+  <div class="view" id="tagListView">
+    <button id="tagBackBtn">← 一覧へ戻る</button>
+    <hr class="sep">
+    <div class="hint" style="margin-bottom:10px;">現在いずれかのキャラクターで使われているタグの一覧です。名前を変更するとその場で全キャラクターに反映され、削除すると使用中の全キャラクターから取り除かれます。</div>
+    <input class="search" id="tagSearchBox" placeholder="タグ名で検索">
+    <div id="tagListBody" style="margin-top:14px;"></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="imageFilesModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="hint" style="margin-bottom:8px;">../images/full ・ ../images/bust のファイルは自動では一覧取得できない仕様上の制約があるため、既にキャラクターで使われているファイル名は自動でサジェストに入ります。まだどのキャラクターにも使っていない画像を先行登録したい場合だけ、ここにファイル名を1行ずつ貼り付けてください。</div>
+    <label>images/full のファイル名一覧</label><textarea id="fullFilesText" style="min-height:110px;"></textarea>
+    <label>images/bust のファイル名一覧</label><textarea id="bustFilesText" style="min-height:110px;"></textarea>
+    <div class="actions">
+      <button class="primary" id="imageFilesSave">保存</button>
+      <button id="imageFilesCancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <p>このキャラクターを削除しますか？</p>
+    <div class="actions">
+      <button class="danger" id="delConfirm">削除する</button>
+      <button id="delCancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- data (tags are plain Japanese strings, no internal IDs) ----------
+let charactersData = { "characters":[
+{"id":"mika","name":"ミカ","reading":"みか","images":{"fullbody":"images/full/mika.png","bust":"images/bust/mika.png"},"profile":{"gender":"女性","height":"165cm","age":"20歳","likes":["猫","甘いもの"],"dislikes":["虫"],"firstPerson":"私","secondPerson":["あなた"],"description":"自信家で面倒見のよい、ぱっつん髪の女性。","longProfile":"幼い頃から面倒見の良さで周りに頼られてきたタイプ。\n自分の意見にははっきり自信を持っているが、それを人に押し付けることはなく、困っている人がいると放っておけない。\n猫と甘いものに目がなく、休日はカフェで新作スイーツを開拓するのが密かな楽しみ。\n見た目はクールだが素は世話焼きで、後輩からは「厳しいけど頼れる先輩」として慕われている。"},"appearance":{"species":["人間"],"body":["高身長","細身","女性"],"face":["クール"],"hair":["ぱっつん","長髪"],"eyes":["ツリ目"],"clothing":["眼鏡"],"color":["青色","白色"],"other":["傷"]},"personality":{"EI":3,"NS":1,"TF":3,"PJ":2,"AT":4,"tags":["自信家","クール","面倒見がいい"]},"alignment":4,"relationships":["守ってくれる","頼れる"],"likesTags":["猫好き","甘いもの好き"]},
+{"id":"ren","name":"レン","reading":"れん","images":{"fullbody":"images/full/ren.png","bust":"images/bust/ren.png"},"profile":{"gender":"男性","height":"180cm","age":"24歳","likes":["ゲーム","コーヒー"],"dislikes":["騒音"],"firstPerson":"俺","secondPerson":["お前"],"description":"無口でクールだが、信頼した相手には甘い青年。","longProfile":"口数は少なく、初対面ではとっつきにくいと思われがちだが、一度懐に入れた相手にはとことん甘い。\n騒がしい場所が苦手で、休みの日はひとりで喫茶店に入り浸ってコーヒーを飲みながらゲームの攻略情報を眺めている。\n信頼している相手のことは何があっても守ろうとする一面があり、そのギャップに気づいた人から慕われることが多い。"},"appearance":{"species":["人間"],"body":["高身長","細身","男性"],"face":["クール"],"hair":["短髪"],"eyes":["ツリ目"],"clothing":["黒い服"],"color":["黒色","青色"],"other":[]},"personality":{"EI":-3,"NS":1,"TF":4,"PJ":3,"AT":2,"tags":["クール","物静か","頼れる"]},"alignment":2,"relationships":["守ってくれる","パートナー気質"],"likesTags":["ゲーム好き","コーヒー好き"]},
+{"id":"poko","name":"ポコ","reading":"ぽこ","images":{"fullbody":"images/full/poko.png","bust":"images/bust/poko.png"},"profile":{"gender":"不明","height":"145cm","age":"不明","likes":["猫","お祭り"],"dislikes":["静かな場所"],"firstPerson":"ぼく","secondPerson":["きみ"],"description":"元気いっぱいで人懐っこい、小柄な人外。","longProfile":"どこから来たのかは本人もよく分かっていないが、とにかく元気で人懐っこい。\n初対面の相手にもすぐしっぽを振って近づいていくので、警戒心という言葉とは無縁。\nお祭りと猫が大好きで、屋台の匂いを嗅ぎつけると誰よりも早く駆け出す。\n実は誰かに守られていると安心するタイプで、頼れる相手を見つけると一直線について回る。"},"appearance":{"species":["人外","人型人外"],"body":["小柄","かわいい"],"face":["かわいい"],"hair":["短髪"],"eyes":["丸目"],"clothing":["リボン"],"color":["黄色","緑色"],"other":["しっぽ"]},"personality":{"EI":5,"NS":3,"TF":1,"PJ":-2,"AT":1,"tags":["元気","人懐っこい","エネルギッシュ"]},"alignment":3,"relationships":["相棒気質","守られたい"],"likesTags":["猫好き","お祭り好き"]},
+{"id":"kuro","name":"クロ","reading":"くろ","images":{"fullbody":"images/full/kuro.png","bust":"images/bust/kuro.png"},"profile":{"gender":"男性","height":"172cm","age":"29歳","likes":["酒場","勝負事"],"dislikes":["正義感の強い人"],"firstPerson":"俺","secondPerson":["あんた"],"description":"悪事も笑ってこなす、口の悪いヴィラン気質の男。","longProfile":"正義感の強い人間を見ると笑いたくなる、根っからのひねくれ者。\n酒場で賭け事に興じているのが一番落ち着く時間で、勝負事となると目の色が変わる。\n口は悪いが仲間内での面倒見は意外と良く、からかいながらも一度手を組んだ相手は最後まで見捨てない。\n傷だらけの過去については誰にも多くを語らない。"},"appearance":{"species":["人間"],"body":["筋肉","大人顔","男性"],"face":["イケメン","人相が悪い"],"hair":["短髪"],"eyes":["ツリ目"],"clothing":["コート","ピアス"],"color":["赤色","黒色"],"other":["傷"]},"personality":{"EI":2,"NS":2,"TF":4,"PJ":-1,"AT":3,"tags":["自信家","荒っぽい","遊び好き"]},"alignment":-4,"relationships":["からかい好き","ライバル気質"],"likesTags":["勝負事好き","酒場好き"]},
+{"id":"shiro","name":"シロ","reading":"しろ","images":{"fullbody":"images/full/shiro.png","bust":"images/bust/shiro.png"},"profile":{"gender":"女性","height":"158cm","age":"18歳","likes":["本","紅茶"],"dislikes":["争い"],"firstPerson":"私","secondPerson":["あなた"],"description":"物静かで知的。困っている人を放っておけない少女。","longProfile":"人と話すよりも本を読んでいる時間の方が落ち着く、物静かな性格。\n紅茶を淹れながら静かに過ごすのが一番好きな時間だが、困っている人を見かけると自分から声をかけてしまう。\n争いごとは苦手で、誰かに守られている方が安心する反面、本人が思っている以上に周りをよく見て助けている。\n知的で丁寧な物腰から、年上の人にも可愛がられやすい。"},"appearance":{"species":["人間"],"body":["細身","童顔","女性"],"face":["かわいい"],"hair":["長髪","姫カット"],"eyes":["タレ目"],"clothing":["リボン","ドレス"],"color":["白色","ピンク色"],"other":[]},"personality":{"EI":-4,"NS":4,"TF":2,"PJ":4,"AT":-1,"tags":["物静か","優しい","知的"]},"alignment":5,"relationships":["守られたい","面倒見がいい"],"likesTags":["読書好き","紅茶好き"]}
+]};
+
+let editingChar = null;
+let editingIsNew = false;
+let fullFiles = [];
+let bustFiles = [];
+try{ fullFiles=JSON.parse(localStorage.getItem('charMaker_fullFiles')||'[]'); }catch(e){}
+try{ bustFiles=JSON.parse(localStorage.getItem('charMaker_bustFiles')||'[]'); }catch(e){}
+
+const APPEARANCE_CATS = [["species","種族"],["body","体格"],["face","人相"],["hair","髪型"],["eyes","目の形"],["clothing","服装・アクセ"],["color","色"],["other","その他"]];
+const PERSONALITY_NUMS = [["EI","EI"],["NS","NS"],["TF","TF"],["PJ","PJ"],["AT","AT"]];
+const TAG_ARRAY_PATHS = c => [c.appearance.species,c.appearance.body,c.appearance.face,c.appearance.hair,c.appearance.eyes,c.appearance.clothing,c.appearance.color,c.appearance.other,c.personality.tags,c.relationships,c.likesTags];
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('open'));document.getElementById(id).classList.add('open');}
+function status(msg){document.getElementById('status').textContent=msg; setTimeout(()=>{if(document.getElementById('status').textContent===msg)document.getElementById('status').textContent='';},3500);}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+// collect every distinct tag string currently in use anywhere
+function getAllUsedTags(){
+  const set=new Set();
+  charactersData.characters.forEach(c=>TAG_ARRAY_PATHS(c).forEach(arr=>arr.forEach(t=>set.add(t))));
+  return Array.from(set).sort((a,b)=>a.localeCompare(b,'ja'));
+}
+
+// ---------- character list ----------
+function renderList(){
+  const q=document.getElementById('searchBox').value.trim();
+  const list=document.getElementById('charList');
+  list.innerHTML='';
+  charactersData.characters.forEach((c,i)=>{
+    if(q && !c.name.includes(q) && !c.reading.includes(q)) return;
+    const div=document.createElement('div');
+    div.className='list-item';
+    const nameEl=document.createElement('div'); nameEl.className='names';
+    nameEl.innerHTML=`${escapeHtml(c.name)}<div class="reading">${escapeHtml(c.reading||'')}</div>`;
+    nameEl.onclick=()=>openEditor(i);
+    const delBtn=document.createElement('button'); delBtn.className='small danger'; delBtn.textContent='削除';
+    delBtn.onclick=()=>{charactersData._editIndex=i; document.getElementById('delModal').classList.add('open');};
+    div.appendChild(nameEl); div.appendChild(delBtn);
+    list.appendChild(div);
+  });
+}
+document.getElementById('searchBox').addEventListener('input',renderList);
+document.getElementById('newCharBtn').onclick=()=>{
+  editingIsNew=true;
+  editingChar={id:"",name:"",reading:"",images:{fullbody:"",bust:""},profile:{gender:"",height:"",age:"",likes:[],dislikes:[],firstPerson:"",secondPerson:[],description:"",longProfile:""},appearance:{species:[],body:[],face:[],hair:[],eyes:[],clothing:[],color:[],other:[]},personality:{EI:0,NS:0,TF:0,PJ:0,AT:0,tags:[]},alignment:0,relationships:[],likesTags:[]};
+  openEditorUI();
+};
+document.getElementById('backBtn').onclick=()=>{editingChar=null; showView('listView'); renderList();};
+
+function openEditor(index){
+  editingIsNew=false;
+  editingChar=JSON.parse(JSON.stringify(charactersData.characters[index]));
+  charactersData._editIndex=index;
+  openEditorUI();
+}
+
+function openEditorUI(){
+  showView('editorView');
+  const c=editingChar;
+  document.getElementById('f_id').value=c.id||'';
+  document.getElementById('f_name').value=c.name||'';
+  document.getElementById('f_reading').value=c.reading||'';
+  document.getElementById('f_gender').value=c.profile.gender||'';
+  document.getElementById('f_height').value=c.profile.height||'';
+  document.getElementById('f_age').value=c.profile.age||'';
+  document.getElementById('f_fullbody').value=(c.images&&c.images.fullbody)||'';
+  document.getElementById('f_bust').value=(c.images&&c.images.bust)||'';
+  document.getElementById('f_firstPerson').value=c.profile.firstPerson||'';
+  document.getElementById('f_description').value=c.profile.description||'';
+  document.getElementById('f_longProfile').value=c.profile.longProfile||'';
+  renderFreelist('f_secondPerson', c.profile.secondPerson=c.profile.secondPerson||[]);
+  renderFreelist('f_likes', c.profile.likes=c.profile.likes||[]);
+  renderFreelist('f_dislikes', c.profile.dislikes=c.profile.dislikes||[]);
+
+  const af=document.getElementById('appearanceFields'); af.innerHTML='';
+  APPEARANCE_CATS.forEach(([key,label])=>{
+    c.appearance[key]=c.appearance[key]||[];
+    const wrap=document.createElement('div');
+    wrap.innerHTML=`<label>${label}</label><div class="tagfield" id="tagfield_appearance_${key}"></div>`;
+    af.appendChild(wrap);
+    mountTagField(`tagfield_appearance_${key}`, c.appearance[key]);
+  });
+
+  // gender -> auto add matching body tag
+  const genderEl=document.getElementById('f_gender');
+  genderEl.onchange=()=>{
+    c.profile.gender=genderEl.value;
+    if((genderEl.value==='女性'||genderEl.value==='男性') && !c.appearance.body.includes(genderEl.value)){
+      c.appearance.body.push(genderEl.value);
+      mountTagField('tagfield_appearance_body', c.appearance.body);
+    }
+  };
+
+  const ps=document.getElementById('personalitySliders'); ps.innerHTML='';
+  PERSONALITY_NUMS.forEach(([key,label])=>{
+    c.personality[key]=c.personality[key]||0;
+    const row=document.createElement('div');
+    row.innerHTML=`<label>${label}</label><div class="range-row"><input type="range" min="-5" max="5" step="1" id="f_p_${key}" value="${c.personality[key]}"><output id="f_p_${key}_out">${c.personality[key]}</output></div>`;
+    ps.appendChild(row);
+  });
+  PERSONALITY_NUMS.forEach(([key])=>{
+    const el=document.getElementById(`f_p_${key}`);
+    el.addEventListener('input',()=>{document.getElementById(`f_p_${key}_out`).textContent=el.value;});
+  });
+  c.personality.tags=c.personality.tags||[];
+  mountTagField('tagfield_personality_tags', c.personality.tags);
+
+  document.getElementById('f_alignment').value=c.alignment||0;
+  document.getElementById('f_alignment_out').textContent=c.alignment||0;
+  document.getElementById('f_alignment').oninput=(e)=>{document.getElementById('f_alignment_out').textContent=e.target.value;};
+
+  c.relationships=c.relationships||[];
+  mountTagField('tagfield_relationships', c.relationships);
+  c.likesTags=c.likesTags||[];
+  mountTagField('tagfield_likesTags', c.likesTags);
+}
+
+function renderFreelist(containerId, arr){
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  arr.forEach((val,i)=>{
+    const row=document.createElement('div'); row.className='row';
+    const inp=document.createElement('input'); inp.type='text'; inp.value=val;
+    inp.oninput=()=>{arr[i]=inp.value;};
+    const rm=document.createElement('button'); rm.textContent='×'; rm.onclick=()=>{arr.splice(i,1);renderFreelist(containerId,arr);};
+    row.appendChild(inp); row.appendChild(rm); el.appendChild(row);
+  });
+  const addBtn=document.createElement('button'); addBtn.textContent='＋ 追加'; addBtn.onclick=()=>{arr.push('');renderFreelist(containerId,arr);};
+  el.appendChild(addBtn);
+}
+
+// ---------- tag input widget (tags = plain Japanese text, stored as-is) ----------
+function mountTagField(containerId, arrRef){
+  const el=document.getElementById(containerId);
+  el.innerHTML='';
+  const chips=document.createElement('div'); chips.className='chips';
+  const inp=document.createElement('input'); inp.type='text'; inp.placeholder='タグを入力...';
+  const sug=document.createElement('div'); sug.className='suggest'; sug.style.display='none';
+  el.appendChild(chips); el.appendChild(inp); el.appendChild(sug);
+
+  function renderChips(){
+    chips.innerHTML='';
+    arrRef.forEach((val,i)=>{
+      const chip=document.createElement('span'); chip.className='chip';
+      chip.innerHTML=`<span>${escapeHtml(val)}</span>`;
+      const rm=document.createElement('button'); rm.textContent='×';
+      rm.onclick=()=>{arrRef.splice(i,1);renderChips();};
+      chip.appendChild(rm); chips.appendChild(chip);
+    });
+  }
+  renderChips();
+
+  function search(term){
+    const t=term.trim();
+    if(!t){sug.style.display='none';return;}
+    const matches=getAllUsedTags().filter(tag=>tag.includes(t)).slice(0,20);
+    sug.innerHTML='';
+    matches.forEach(tag=>{
+      const d=document.createElement('div');
+      d.textContent=tag;
+      d.onclick=()=>{ if(!arrRef.includes(tag))arrRef.push(tag); inp.value=''; sug.style.display='none'; renderChips(); };
+      sug.appendChild(d);
+    });
+    if(!matches.includes(t)){
+      const d2=document.createElement('div'); d2.className='newtag';
+      d2.textContent=`＋「${t}」を新しいタグとして追加`;
+      d2.onclick=()=>{ if(!arrRef.includes(t))arrRef.push(t); inp.value=''; sug.style.display='none'; renderChips(); };
+      sug.appendChild(d2);
+    }
+    sug.style.display='block';
+  }
+  inp.addEventListener('input',()=>search(inp.value));
+  inp.addEventListener('focus',()=>{if(inp.value)search(inp.value);});
+  document.addEventListener('click',(e)=>{if(!el.contains(e.target))sug.style.display='none';});
+}
+
+// filenames already referenced by any character (auto-detected, no listing API needed)
+function usedImageFilenames(field){
+  const set=new Set();
+  charactersData.characters.forEach(c=>{
+    const p=c.images && c.images[field];
+    if(p) set.add(p.split('/').pop());
+  });
+  return Array.from(set);
+}
+
+// ---------- image path autocomplete (suggests from registered GitHub filenames) ----------
+function attachPathAutocomplete(inputId, wrapId, prefix, listGetter){
+  const inp=document.getElementById(inputId);
+  const wrap=document.getElementById(wrapId);
+  const sug=document.createElement('div'); sug.className='suggest'; sug.style.display='none';
+  wrap.appendChild(sug);
+  function search(term){
+    term=term.trim().toLowerCase();
+    if(!term){sug.style.display='none';return;}
+    const matches=listGetter().filter(f=>f.toLowerCase().includes(term)).slice(0,20);
+    sug.innerHTML='';
+    matches.forEach(f=>{
+      const d=document.createElement('div'); d.textContent=f;
+      d.onclick=()=>{ inp.value=prefix+f; sug.style.display='none'; };
+      sug.appendChild(d);
+    });
+    sug.style.display=matches.length?'block':'none';
+  }
+  inp.addEventListener('input',()=>search(inp.value.split('/').pop()));
+  inp.addEventListener('focus',()=>{if(inp.value)search(inp.value.split('/').pop());});
+  document.addEventListener('click',(e)=>{if(!wrap.contains(e.target))sug.style.display='none';});
+}
+attachPathAutocomplete('f_fullbody','fullbodyWrap','images/full/',()=>Array.from(new Set([...usedImageFilenames('fullbody'),...fullFiles])));
+attachPathAutocomplete('f_bust','bustWrap','images/bust/',()=>Array.from(new Set([...usedImageFilenames('bust'),...bustFiles])));
+
+document.getElementById('imageFilesBtn').onclick=()=>{
+  document.getElementById('fullFilesText').value=fullFiles.join('\n');
+  document.getElementById('bustFilesText').value=bustFiles.join('\n');
+  document.getElementById('imageFilesModal').classList.add('open');
+};
+document.getElementById('imageFilesCancel').onclick=()=>document.getElementById('imageFilesModal').classList.remove('open');
+document.getElementById('imageFilesSave').onclick=()=>{
+  fullFiles=document.getElementById('fullFilesText').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  bustFiles=document.getElementById('bustFilesText').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  try{
+    localStorage.setItem('charMaker_fullFiles',JSON.stringify(fullFiles));
+    localStorage.setItem('charMaker_bustFiles',JSON.stringify(bustFiles));
+  }catch(e){}
+  document.getElementById('imageFilesModal').classList.remove('open');
+  status('画像ファイル一覧を保存しました');
+};
+
+// ---------- save / delete character ----------
+document.getElementById('saveCharBtn').onclick=()=>{
+  const c=editingChar;
+  const newId=document.getElementById('f_id').value.trim();
+  if(!newId){alert('IDを入力してください');return;}
+  const dup=charactersData.characters.some((ch,i)=>ch.id===newId && i!==charactersData._editIndex);
+  if(dup){alert('そのIDは既に使われています');return;}
+  c.id=newId;
+  c.name=document.getElementById('f_name').value.trim();
+  c.reading=document.getElementById('f_reading').value.trim();
+  c.images={fullbody:document.getElementById('f_fullbody').value.trim(),bust:document.getElementById('f_bust').value.trim()};
+  c.profile.gender=document.getElementById('f_gender').value.trim();
+  c.profile.height=document.getElementById('f_height').value.trim();
+  c.profile.age=document.getElementById('f_age').value.trim();
+  c.profile.firstPerson=document.getElementById('f_firstPerson').value.trim();
+  c.profile.description=document.getElementById('f_description').value;
+  c.profile.longProfile=document.getElementById('f_longProfile').value;
+  PERSONALITY_NUMS.forEach(([key])=>{c.personality[key]=parseInt(document.getElementById(`f_p_${key}`).value,10);});
+  c.alignment=parseInt(document.getElementById('f_alignment').value,10);
+  if(editingIsNew){charactersData.characters.push(c);}
+  else{charactersData.characters[charactersData._editIndex]=c;}
+  status('保存しました（ローカル保存/全コピーで確定してください）');
+  editingChar=null;
+  showView('listView'); renderList();
+};
+
+document.getElementById('deleteCharBtn').onclick=()=>document.getElementById('delModal').classList.add('open');
+document.getElementById('delCancel').onclick=()=>document.getElementById('delModal').classList.remove('open');
+document.getElementById('delConfirm').onclick=()=>{
+  charactersData.characters.splice(charactersData._editIndex,1);
+  document.getElementById('delModal').classList.remove('open');
+  editingChar=null;
+  showView('listView'); renderList();
+  status('削除しました');
+};
+
+// ---------- tag list view (derived from usage, no separate registry) ----------
+document.getElementById('tagListBtn').onclick=()=>{showView('tagListView'); renderTagList();};
+document.getElementById('tagBackBtn').onclick=()=>{showView('listView'); renderList();};
+document.getElementById('tagSearchBox').addEventListener('input',renderTagList);
+
+function renameTagEverywhere(oldVal,newVal){
+  charactersData.characters.forEach(c=>{
+    TAG_ARRAY_PATHS(c).forEach(arr=>{
+      const idx=arr.indexOf(oldVal);
+      if(idx>=0){ if(arr.includes(newVal)) arr.splice(idx,1); else arr[idx]=newVal; }
+    });
+  });
+}
+function deleteTagEverywhere(val){
+  charactersData.characters.forEach(c=>{
+    TAG_ARRAY_PATHS(c).forEach(arr=>{
+      const idx=arr.indexOf(val);
+      if(idx>=0)arr.splice(idx,1);
+    });
+  });
+}
+
+function renderTagList(){
+  const q=document.getElementById('tagSearchBox').value.trim();
+  const body=document.getElementById('tagListBody');
+  body.innerHTML='';
+  getAllUsedTags().filter(t=>!q||t.includes(q)).forEach(tag=>{
+    const row=document.createElement('div'); row.className='tagrow';
+    const inp=document.createElement('input'); inp.value=tag;
+    const saveBtn=document.createElement('button'); saveBtn.className='small'; saveBtn.textContent='更新';
+    saveBtn.onclick=()=>{
+      const nv=inp.value.trim();
+      if(!nv){alert('タグ名を入力してください');return;}
+      if(nv!==tag){ renameTagEverywhere(tag,nv); status('タグ名を変更しました'); renderTagList(); }
+    };
+    const delBtn=document.createElement('button'); delBtn.className='small danger'; delBtn.textContent='削除';
+    delBtn.onclick=()=>{
+      if(!confirm(`タグ「${tag}」を削除しますか？使用中の全キャラクターからも削除されます。`))return;
+      deleteTagEverywhere(tag);
+      status('タグを削除しました');
+      renderTagList();
+    };
+    row.appendChild(inp); row.appendChild(saveBtn); row.appendChild(delBtn);
+    body.appendChild(row);
+  });
+}
+
+// ---------- JSON management ----------
+async function loadFromGithub(silent){
+  try{
+    const res=await fetch('../data/characters.json');
+    if(res.ok){
+      const data=await res.json();
+      charactersData.characters=data.characters||[];
+      renderList();
+      status('../data/characters.json を読み込みました');
+      return true;
+    }
+  }catch(e){}
+  if(!silent) status('../data/characters.json を読み込めませんでした（このツールを実際にリポジトリへ配置してから開いてください）');
+  return false;
+}
+document.getElementById('githubReload').onclick=()=>loadFromGithub(false);
+document.getElementById('loadChars').addEventListener('change', async (e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    charactersData.characters=data.characters||[];
+    renderList();
+    status('characters.jsonを読み込みました');
+  }catch(err){ alert('読み込みに失敗しました: '+err.message); }
+});
+document.getElementById('localSave').onclick=()=>{
+  try{ localStorage.setItem('charMaker_data', JSON.stringify(charactersData)); status('ローカルに保存しました'); }
+  catch(err){ status('ローカル保存に失敗しました'); }
+};
+document.getElementById('localLoad').onclick=()=>{
+  try{
+    const d=localStorage.getItem('charMaker_data');
+    if(d){ const parsed=JSON.parse(d); charactersData.characters=parsed.characters||[]; }
+    renderList();
+    status('ローカル保存を読み込みました');
+  }catch(err){ status('読み込みに失敗しました'); }
+};
+async function copyText(text,label){
+  try{ await navigator.clipboard.writeText(text); status(label+'をコピーしました'); }
+  catch(err){ prompt(label+'（自動コピーできませんでした。手動でコピーしてください）', text); }
+}
+document.getElementById('copyChars').onclick=()=>copyText(JSON.stringify({characters:charactersData.characters},null,2),'characters.json');
+
+renderList();
+loadFromGithub(true);
+</script>
+</body>
+</html>
