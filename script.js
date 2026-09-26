@@ -9,23 +9,16 @@ const VALUE={yes:2,mostlyYes:1,neutral:0,mostlyNo:-1,no:-2};
 const appearanceFields=["species","body","face","hair","eyes","clothing","color","other"];
 const personalityAxes=["EI","NS","TF","PJ","AT"];
 
-let TAG_LABELS={};
-
-function labelFor(tag){
-  return TAG_LABELS[tag]||tag;
-}
 
 async function init(){
   try{
-    const [c,q,t]=await Promise.all([
+    const [c,q]=await Promise.all([
       fetch("data/characters.json"),
-      fetch("data/questions.json"),
-      fetch("data/tag_labels.json")
+      fetch("data/questions.json")
     ]);
 
     const cd=await c.json();
     const qd=await q.json();
-    TAG_LABELS=await t.json();
 
     state.chars=cd.characters;
     state.questions=qd.questions;
@@ -249,16 +242,50 @@ function questionHTML(){
     <div class="answers"><div class="answer-grid">${ANSWERS.map(([v,t])=>`<button class="choice" data-answer="${v}">${t}</button>`).join("")}</div></div></div></div>
   </section>`;
 }
+
 function featurePool(c){
   const out=[];
-  for(const f of appearanceFields) for(const t of (c.appearance?.[f]||[])) out.push({label:labelFor(t),score:Math.abs(state.scores[t]??0)});
-  for(const t of (c.personality?.tags||[])) out.push({label:labelFor(t),score:Math.abs(state.scores[t]??0)});
-  for(const t of (c.relationships||[])) out.push({label:labelFor(t),score:Math.abs(state.scores[t]??0)});
-  for(const t of (c.likesTags||[])) out.push({label:labelFor(t),score:Math.abs(state.scores[t]??0)});
-  if(c.alignment!==undefined) out.push({label:c.alignment>=0?"善寄り":"悪寄り",score:Math.abs((state.scores.alignment??0)*c.alignment)});
+
+  for(const f of appearanceFields)
+    for(const t of (c.appearance?.[f]||[]))
+      out.push({
+        label:t,
+        score:Math.abs(state.scores[t]??0)
+      });
+
+  for(const t of (c.personality?.tags||[]))
+    out.push({
+      label:t,
+      score:Math.abs(state.scores[t]??0)
+    });
+
+  for(const t of (c.relationships||[]))
+    out.push({
+      label:t,
+      score:Math.abs(state.scores[t]??0)
+    });
+
+  for(const t of (c.likesTags||[]))
+    out.push({
+      label:t,
+      score:Math.abs(state.scores[t]??0)
+    });
+
+  if(c.alignment!==undefined)
+    out.push({
+      label:c.alignment>=0?"善寄り":"悪寄り",
+      score:Math.abs((state.scores.alignment??0)*c.alignment)
+    });
+
   const seen=new Set();
-  return out.sort((a,b)=>b.score-a.score).filter(x=>!seen.has(x.label)&&seen.add(x.label)).slice(0,5).map(x=>x.label);
+
+  return out
+    .sort((a,b)=>b.score-a.score)
+    .filter(x=>!seen.has(x.label)&&seen.add(x.label))
+    .slice(0,5)
+    .map(x=>x.label);
 }
+
 function logBlockHTML(log,blockIdx){
   const total=log.blockSize||log.entries.length;
   const rankLine=log.ranks.slice(0,3).map(c=>`${esc(c.name)} ${Math.round(c.score)}%`).join(" / ");
