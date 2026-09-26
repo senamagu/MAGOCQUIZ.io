@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>質問メーカー</title>
+<style>
+:root{
+  --bg:#faf8f4; --panel:#fff; --ink:#2b2620; --sub:#6b6255; --line:#e4ddd0;
+  --accent:#3d5a4a; --accent-ink:#fff; --danger:#a4483a; --chip:#eef1ec;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1a17; --panel:#262320; --ink:#ece6db; --sub:#a89f8e; --line:#3a352e;
+    --accent:#7fae95; --accent-ink:#12211b; --danger:#e08a7a; --chip:#33302a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1a17; --panel:#262320; --ink:#ece6db; --sub:#a89f8e; --line:#3a352e;
+  --accent:#7fae95; --accent-ink:#12211b; --danger:#e08a7a; --chip:#33302a;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic",system-ui,sans-serif;}
+h1{font-size:1.25rem;font-weight:600;margin:0;}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:14px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;}
+.toolrow{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:7px 12px;border-radius:6px;cursor:pointer;}
+button:hover{border-color:var(--accent);}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+button.danger{color:var(--danger);border-color:var(--danger);}
+button.small{padding:4px 8px;font-size:.8rem;}
+.file-btn{position:relative;overflow:hidden;}
+.file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+main{max-width:960px;margin:0 auto;padding:20px 16px 60px;}
+.status{font-size:.85rem;color:var(--sub);min-height:1.2em;padding:0 16px;}
+.search{width:100%;max-width:360px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;}
+.list{display:flex;flex-direction:column;gap:6px;margin-top:14px;}
+.list-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);}
+.list-item:hover{border-color:var(--accent);}
+.list-item .qtext{line-height:1.3;cursor:pointer;flex:1;white-space:pre-line;}
+.list-item .cat{font-size:.75rem;color:var(--sub);}
+.view{display:none;}
+.view.open{display:block;}
+fieldset{border:1px solid var(--line);border-radius:8px;padding:14px;margin:0 0 16px;}
+legend{padding:0 6px;font-size:.85rem;color:var(--sub);}
+label{display:block;font-size:.8rem;color:var(--sub);margin-bottom:3px;margin-top:8px;}
+input[type=text],input[type=number],textarea,select{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit;}
+textarea{resize:vertical;min-height:70px;font-family:inherit;}
+.radiorow{display:flex;gap:16px;margin-top:6px;}
+.radiorow label{display:flex;align-items:center;gap:5px;font-size:.9rem;color:var(--ink);margin:0;}
+.preview{background:var(--chip);border-radius:6px;padding:10px 12px;margin-top:8px;white-space:pre-line;font-size:.95rem;}
+.tagfield{position:relative;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0;}
+.chip{background:var(--chip);border-radius:14px;padding:4px 8px 4px 10px;font-size:.85rem;display:flex;align-items:center;gap:6px;}
+.chip button{border:none;background:none;padding:0 2px;color:var(--sub);cursor:pointer;font-size:.9rem;line-height:1;}
+.suggest{position:absolute;left:0;right:0;top:100%;background:var(--panel);border:1px solid var(--line);border-radius:6px;margin-top:2px;max-height:220px;overflow-y:auto;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,.12);}
+.suggest div{padding:7px 10px;cursor:pointer;font-size:.9rem;}
+.suggest div:hover{background:var(--chip);}
+.suggest .newtag{color:var(--accent);}
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);align-items:center;justify-content:center;z-index:20;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--panel);border-radius:10px;padding:20px;max-width:360px;width:90%;}
+.hint{font-size:.75rem;color:var(--sub);margin-top:2px;}
+hr.sep{border:none;border-top:1px solid var(--line);margin:18px 0;}
+.efftable{width:100%;border-collapse:collapse;margin-top:8px;font-size:.85rem;}
+.efftable th,.efftable td{border:1px solid var(--line);padding:5px;text-align:center;}
+.efftable input{padding:4px;width:100%;text-align:center;}
+.efftable .targetcell{text-align:left;min-width:140px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media (max-width:600px){.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>質問メーカー</h1>
+  <div class="toolrow">
+    <button id="githubReload">GitHubから再読込</button>
+    <button class="file-btn">questions.json読込<input type="file" id="loadQuestions" accept=".json"></button>
+    <button class="file-btn">characters.json読込<input type="file" id="loadChars" accept=".json"></button>
+    <button id="localSave">ローカル保存</button>
+    <button id="localLoad">ローカル保存を読込</button>
+    <button id="copyQuestions">questions.json全コピー</button>
+  </div>
+</div>
+<div class="status" id="status"></div>
+
+<main>
+  <div class="view open" id="listView">
+    <input class="search" id="searchBox" placeholder="質問文・カテゴリで検索">
+    <div class="actions">
+      <button class="primary" id="newQBtn">＋ 新規質問追加</button>
+      <button id="templateBtn">テンプレート管理</button>
+    </div>
+    <div class="list" id="qList"></div>
+  </div>
+
+  <div class="view" id="editorView">
+    <button id="backBtn">← 一覧へ戻る</button>
+    <hr class="sep">
+    <fieldset>
+      <legend>質問文</legend>
+      <div class="radiorow">
+        <label><input type="radio" name="mode" id="mode_template" value="template"> テンプレートから作成</label>
+        <label><input type="radio" name="mode" id="mode_free" value="free"> 自由入力</label>
+      </div>
+      <div id="templateArea">
+        <label>テンプレート</label>
+        <select id="f_templateNum"></select>
+        <label>{word} に入れる語句</label>
+        <div class="tagfield" id="tagfield_word"></div>
+      </div>
+      <div id="freeArea">
+        <label>質問文（改行そのまま保存されます）</label>
+        <textarea id="f_freeText" style="min-height:90px;"></textarea>
+      </div>
+      <label>プレビュー</label>
+      <div class="preview" id="qPreview"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>カテゴリ・対象タグ</legend>
+      <label>カテゴリ</label>
+      <select id="f_category">
+        <option value="appearance">appearance（外見）</option>
+        <option value="personality">personality（性格）</option>
+        <option value="alignment">alignment（善悪・立場）</option>
+        <option value="relationships">relationships（関係性）</option>
+        <option value="likes">likes（好きなもの）</option>
+      </select>
+      <label>targetTags（診断計算に影響するタグ）</label>
+      <div class="tagfield" id="tagfield_targetTags"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>background（質問中に背景表示するキャラクターの選出条件）</legend>
+      <label>カテゴリ</label>
+      <select id="f_bgCategory">
+        <option value="">（指定なし）</option>
+        <option value="species">種族</option>
+        <option value="body">体格</option>
+        <option value="face">人相</option>
+        <option value="hair">髪型</option>
+        <option value="eyes">目の形</option>
+        <option value="clothing">服装・アクセ</option>
+        <option value="color">色</option>
+        <option value="other">その他</option>
+      </select>
+      <label>タグ</label>
+      <div class="tagfield" id="tagfield_bgTags"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>effects（回答ごとの加減点／空欄はそのタグを変更しない）</legend>
+      <div id="effectsTable"></div>
+      <div class="actions"><button id="addEffectRow">＋ 対象タグ/属性を追加</button></div>
+      <div class="hint">EI・NS・TF・PJ・AT・alignment は性格数値／善悪数値を直接動かせます。それ以外は好きな日本語タグを指定できます。</div>
+    </fieldset>
+
+    <div class="actions">
+      <button class="primary" id="saveQBtn">保存</button>
+      <button class="danger" id="deleteQBtn">削除</button>
+    </div>
+  </div>
+</main>
+
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <p>この質問を削除しますか？</p>
+    <div class="actions">
+      <button class="danger" id="delConfirm">削除する</button>
+      <button id="delCancel">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- reference character data (read-only, feeds tag suggestions) ----------
+let refCharacters = [
+{"appearance":{"species":["人間"],"body":["高身長","細身","女性"],"face":["クール"],"hair":["ぱっつん","長髪"],"eyes":["ツリ目"],"clothing":["眼鏡"],"color":["青色","白色"],"other":["傷"]},"personality":{"tags":["自信家","クール","面倒見がいい"]},"relationships":["守ってくれる","頼れる"],"likesTags":["猫好き","甘いもの好き"]},
+{"appearance":{"species":["人間"],"body":["高身長","細身","男性"],"face":["クール"],"hair":["短髪"],"eyes":["ツリ目"],"clothing":["黒い服"],"color":["黒色","青色"],"other":[]},"personality":{"tags":["クール","物静か","頼れる"]},"relationships":["守ってくれる","パートナー気質"],"likesTags":["ゲーム好き","コーヒー好き"]},
+{"appearance":{"species":["人外","人型人外"],"body":["小柄","かわいい"],"face":["かわいい"],"hair":["短髪"],"eyes":["丸目"],"clothing":["リボン"],"color":["黄色","緑色"],"other":["しっぽ"]},"personality":{"tags":["元気","人懐っこい","エネルギッシュ"]},"relationships":["相棒気質","守られたい"],"likesTags":["猫好き","お祭り好き"]},
+{"appearance":{"species":["人間"],"body":["筋肉","大人顔","男性"],"face":["イケメン","人相が悪い"],"hair":["短髪"],"eyes":["ツリ目"],"clothing":["コート","ピアス"],"color":["赤色","黒色"],"other":["傷"]},"personality":{"tags":["自信家","荒っぽい","遊び好き"]},"relationships":["からかい好き","ライバル気質"],"likesTags":["勝負事好き","酒場好き"]},
+{"appearance":{"species":["人間"],"body":["細身","童顔","女性"],"face":["かわいい"],"hair":["長髪","姫カット"],"eyes":["タレ目"],"clothing":["リボン","ドレス"],"color":["白色","ピンク色"],"other":[]},"personality":{"tags":["物静か","優しい","知的"]},"relationships":["守られたい","面倒見がいい"],"likesTags":["読書好き","紅茶好き"]}
+];
+const TAG_PATHS = c => [c.appearance.species,c.appearance.body,c.appearance.face,c.appearance.hair,c.appearance.eyes,c.appearance.clothing,c.appearance.color,c.appearance.other,c.personality.tags,c.relationships,c.likesTags];
+function getAllUsedTags(){
+  const set=new Set();
+  refCharacters.forEach(c=>TAG_PATHS(c).forEach(arr=>(arr||[]).forEach(t=>set.add(t))));
+  return Array.from(set).sort((a,b)=>a.localeCompare(b,'ja'));
+}
+const SPECIAL_ATTRS = ["EI","NS","TF","PJ","AT","alignment"];
+
+// ---------- question data ----------
+let questionsData = {
+  "defaults":{"answerValues":{"yes":2,"mostlyYes":1,"neutral":0,"mostlyNo":-1,"no":-2}},
+  "templates":{"1":"あなたは\n{word}が\n好き？","2":"{word}キャラクターは\n好き？","3":"自分は\n{word}タイプ？","4":"{word}されたい？","5":"{word}関係性は\n好き？"},
+  "questions":[
+    {"id":"q001","template":1,"word":"ぱっつん","category":"appearance","targetTags":["ぱっつん"]},
+    {"id":"q002","template":1,"word":"高身長","category":"appearance","targetTags":["高身長"]},
+    {"id":"q008","template":2,"word":"クール","category":"personality","targetTags":["クール"],"effects":{"yes":{"クール":2},"mostlyYes":{"クール":1},"neutral":{"クール":0},"mostlyNo":{"クール":-1},"no":{"クール":-2}}},
+    {"id":"q011","template":1,"word":"善人","category":"alignment","targetTags":["善人"],"effects":{"yes":{"alignment":2},"mostlyYes":{"alignment":1},"neutral":{"alignment":0},"mostlyNo":{"alignment":-1},"no":{"alignment":-2}}},
+    {"id":"q013","template":5,"word":"守ってもらう","category":"relationships","targetTags":["守られたい"]},
+    {"id":"q015","template":1,"word":"猫","category":"likes","targetTags":["猫好き"]},
+    {"id":"q017","template":3,"word":"人といると元気になる","category":"personality","targetTags":["EI"],"effects":{"yes":{"EI":2},"mostlyYes":{"EI":1},"neutral":{"EI":0},"mostlyNo":{"EI":-1},"no":{"EI":-2}}}
+  ]
+};
+
+let editingQ=null, editingIsNew=false;
+const ANSWER_LEVELS=[["yes","はい"],["mostlyYes","ややはい"],["neutral","どちらでも"],["mostlyNo","やや いいえ"],["no","いいえ"]];
+const CAT_LABEL={appearance:"外見",personality:"性格",alignment:"善悪・立場",relationships:"関係性",likes:"好きなもの"};
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('open'));document.getElementById(id).classList.add('open');}
+function status(msg){document.getElementById('status').textContent=msg; setTimeout(()=>{if(document.getElementById('status').textContent===msg)document.getElementById('status').textContent='';},3500);}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+
+function renderQuestionText(q){
+  if(q.template!=null){
+    const tpl=questionsData.templates[String(q.template)]||'';
+    return tpl.replace('{word}', q.word||'');
+  }
+  return q.text||'';
+}
+
+// ---------- list ----------
+function renderList(){
+  const q=document.getElementById('searchBox').value.trim();
+  const list=document.getElementById('qList'); list.innerHTML='';
+  questionsData.questions.forEach((item,i)=>{
+    const text=renderQuestionText(item);
+    if(q && !text.includes(q) && !item.category.includes(q)) return;
+    const div=document.createElement('div'); div.className='list-item';
+    const t=document.createElement('div'); t.className='qtext';
+    t.innerHTML=`${escapeHtml(text)}<div class="cat">${CAT_LABEL[item.category]||item.category}</div>`;
+    t.onclick=()=>openEditor(i);
+    const del=document.createElement('button'); del.className='small danger'; del.textContent='削除';
+    del.onclick=()=>{questionsData._editIndex=i; document.getElementById('delModal').classList.add('open');};
+    div.appendChild(t); div.appendChild(del); list.appendChild(div);
+  });
+}
+document.getElementById('searchBox').addEventListener('input',renderList);
+document.getElementById('backBtn').onclick=()=>{editingQ=null; showView('listView'); renderList();};
+
+document.getElementById('newQBtn').onclick=()=>{
+  editingIsNew=true;
+  editingQ={id:"",template:1,word:"",category:"appearance",targetTags:[],background:{category:"",tags:[]},effects:null};
+  openEditorUI();
+};
+function openEditor(i){
+  editingIsNew=false;
+  editingQ=JSON.parse(JSON.stringify(questionsData.questions[i]));
+  editingQ.background=editingQ.background||{category:"",tags:[]};
+  questionsData._editIndex=i;
+  openEditorUI();
+}
+
+// ---------- tag chip field (same pattern as character maker) ----------
+function mountTagField(containerId, arrRef, onChange){
+  const el=document.getElementById(containerId); el.innerHTML='';
+  const chips=document.createElement('div'); chips.className='chips';
+  const inp=document.createElement('input'); inp.type='text'; inp.placeholder='タグを入力...';
+  const sug=document.createElement('div'); sug.className='suggest'; sug.style.display='none';
+  el.appendChild(chips); el.appendChild(inp); el.appendChild(sug);
+  function renderChips(){
+    chips.innerHTML='';
+    arrRef.forEach((val,i)=>{
+      const chip=document.createElement('span'); chip.className='chip';
+      chip.innerHTML=`<span>${escapeHtml(val)}</span>`;
+      const rm=document.createElement('button'); rm.textContent='×';
+      rm.onclick=()=>{arrRef.splice(i,1);renderChips(); if(onChange)onChange();};
+      chip.appendChild(rm); chips.appendChild(chip);
+    });
+  }
+  renderChips();
+  function search(term){
+    const t=term.trim();
+    if(!t){sug.style.display='none';return;}
+    const matches=getAllUsedTags().filter(tag=>tag.includes(t)).slice(0,20);
+    sug.innerHTML='';
+    matches.forEach(tag=>{
+      const d=document.createElement('div'); d.textContent=tag;
+      d.onclick=()=>{if(!arrRef.includes(tag))arrRef.push(tag); inp.value=''; sug.style.display='none'; renderChips(); if(onChange)onChange();};
+      sug.appendChild(d);
+    });
+    if(!matches.includes(t)){
+      const d2=document.createElement('div'); d2.className='newtag'; d2.textContent=`＋「${t}」を新しいタグとして追加`;
+      d2.onclick=()=>{if(!arrRef.includes(t))arrRef.push(t); inp.value=''; sug.style.display='none'; renderChips(); if(onChange)onChange();};
+      sug.appendChild(d2);
+    }
+    sug.style.display='block';
+  }
+  inp.addEventListener('input',()=>search(inp.value));
+  inp.addEventListener('focus',()=>{if(inp.value)search(inp.value);});
+  document.addEventListener('click',(e)=>{if(!el.contains(e.target))sug.style.display='none';});
+}
+
+// single-value tag/attribute input with suggestions (used for {word} and effect targets)
+function mountSingleTagInput(inputEl, listGetter, onPick){
+  const wrap=inputEl.parentElement;
+  wrap.style.position='relative';
+  const sug=document.createElement('div'); sug.className='suggest'; sug.style.display='none';
+  wrap.appendChild(sug);
+  function search(term){
+    const t=term.trim();
+    if(!t){sug.style.display='none';return;}
+    const matches=listGetter().filter(x=>x.includes(t)).slice(0,20);
+    sug.innerHTML='';
+    matches.forEach(x=>{
+      const d=document.createElement('div'); d.textContent=x;
+      d.onclick=()=>{inputEl.value=x; sug.style.display='none'; if(onPick)onPick(x);};
+      sug.appendChild(d);
+    });
+    sug.style.display=matches.length?'block':'none';
+  }
+  inputEl.addEventListener('input',()=>{search(inputEl.value); if(onPick)onPick(inputEl.value);});
+  inputEl.addEventListener('focus',()=>{if(inputEl.value)search(inputEl.value);});
+  document.addEventListener('click',(e)=>{if(!wrap.contains(e.target))sug.style.display='none';});
+}
+
+function updatePreview(){
+  const mode=document.getElementById('mode_template').checked?'template':'free';
+  let text='';
+  if(mode==='template'){
+    const tpl=questionsData.templates[document.getElementById('f_templateNum').value]||'';
+    text=tpl.replace('{word}', editingQ.word||'');
+  }else{
+    text=document.getElementById('f_freeText').value;
+  }
+  document.getElementById('qPreview').textContent=text||'(未入力)';
+}
+
+function openEditorUI(){
+  showView('editorView');
+  const q=editingQ;
+  const isTemplate = q.template!=null;
+  document.getElementById('mode_template').checked=isTemplate;
+  document.getElementById('mode_free').checked=!isTemplate;
+  document.getElementById('templateArea').style.display=isTemplate?'block':'none';
+  document.getElementById('freeArea').style.display=isTemplate?'none':'block';
+
+  const sel=document.getElementById('f_templateNum'); sel.innerHTML='';
+  Object.keys(questionsData.templates).forEach(num=>{
+    const opt=document.createElement('option'); opt.value=num;
+    opt.textContent=`${num}: ${questionsData.templates[num].replace(/\n/g,' / ')}`;
+    sel.appendChild(opt);
+  });
+  sel.value=isTemplate?String(q.template):Object.keys(questionsData.templates)[0];
+  sel.onchange=updatePreview;
+
+  const wordInp=document.getElementById('tagfield_word'); wordInp.innerHTML='';
+  const wi=document.createElement('input'); wi.type='text'; wi.value=q.word||''; wordInp.appendChild(wi);
+  mountSingleTagInput(wi, ()=>getAllUsedTags(), (val)=>{q.word=val; updatePreview();});
+  wi.addEventListener('input',()=>{q.word=wi.value; updatePreview();});
+
+  document.getElementById('f_freeText').value=q.text||'';
+  document.getElementById('f_freeText').oninput=updatePreview;
+
+  document.getElementById('mode_template').onchange=()=>{document.getElementById('templateArea').style.display='block';document.getElementById('freeArea').style.display='none';updatePreview();};
+  document.getElementById('mode_free').onchange=()=>{document.getElementById('templateArea').style.display='none';document.getElementById('freeArea').style.display='block';updatePreview();};
+
+  document.getElementById('f_category').value=q.category||'appearance';
+  q.targetTags=q.targetTags||[];
+  mountTagField('tagfield_targetTags', q.targetTags, syncEffectsFromTargetTags);
+
+  document.getElementById('f_bgCategory').value=(q.background&&q.background.category)||'';
+  q.background=q.background||{category:'',tags:[]};
+  q.background.tags=q.background.tags||[];
+  mountTagField('tagfield_bgTags', q.background.tags);
+
+  q._effectsRows = effectsObjToRows(q.effects);
+  syncEffectsFromTargetTags();
+  renderEffectsTable();
+
+  updatePreview();
+}
+
+function syncEffectsFromTargetTags(){
+  if(!editingQ) return;
+  editingQ._effectsRows = editingQ._effectsRows || [];
+  const existing=new Set(editingQ._effectsRows.map(r=>r.target));
+  (editingQ.targetTags||[]).forEach(tag=>{
+    if(!tag || existing.has(tag)) return;
+    editingQ._effectsRows.push({target:tag,yes:2,mostlyYes:1,neutral:0,mostlyNo:-1,no:-2});
+    existing.add(tag);
+  });
+  renderEffectsTable();
+}
+
+function effectsObjToRows(effects){
+  if(!effects) return [];
+  const targets=new Set();
+  ANSWER_LEVELS.forEach(([k])=>Object.keys(effects[k]||{}).forEach(t=>targets.add(t)));
+  return Array.from(targets).map(target=>{
+    const row={target};
+    ANSWER_LEVELS.forEach(([k])=>{row[k]=(effects[k]&&effects[k][target]!=null)?effects[k][target]:'';});
+    return row;
+  });
+}
+function renderEffectsTable(){
+  const wrap=document.getElementById('effectsTable'); wrap.innerHTML='';
+  if(editingQ._effectsRows.length===0){wrap.innerHTML='<div class="hint">対象タグ/属性が未追加です。</div>';return;}
+  const table=document.createElement('table'); table.className='efftable';
+  const thead=document.createElement('tr');
+  thead.innerHTML='<th>対象</th>'+ANSWER_LEVELS.map(([,l])=>`<th>${l}</th>`).join('')+'<th></th>';
+  table.appendChild(thead);
+  editingQ._effectsRows.forEach((row,ri)=>{
+    const tr=document.createElement('tr');
+    const td0=document.createElement('td'); td0.className='targetcell';
+    const inp=document.createElement('input'); inp.type='text'; inp.value=row.target;
+    td0.appendChild(inp);
+    mountSingleTagInput(inp, ()=>[...SPECIAL_ATTRS,...getAllUsedTags()], (val)=>{row.target=val;});
+    inp.addEventListener('input',()=>{row.target=inp.value;});
+    tr.appendChild(td0);
+    ANSWER_LEVELS.forEach(([k])=>{
+      const td=document.createElement('td');
+      const ni=document.createElement('input'); ni.type='number'; ni.value=row[k];
+      ni.oninput=()=>{row[k]=ni.value;};
+      td.appendChild(ni); tr.appendChild(td);
+    });
+    const tdx=document.createElement('td');
+    const rm=document.createElement('button'); rm.className='small danger'; rm.textContent='×';
+    rm.onclick=()=>{editingQ._effectsRows.splice(ri,1); renderEffectsTable();};
+    tdx.appendChild(rm); tr.appendChild(tdx);
+    table.appendChild(tr);
+  });
+  wrap.appendChild(table);
+}
+document.getElementById('addEffectRow').onclick=()=>{editingQ._effectsRows.push({target:'',yes:'',mostlyYes:'',neutral:'',mostlyNo:'',no:''}); renderEffectsTable();};
+
+// ---------- save / delete ----------
+document.getElementById('saveQBtn').onclick=()=>{
+  const q=editingQ;
+  q.id = q.id || ('q'+String(Date.now()).slice(-6));
+  const isTemplate=document.getElementById('mode_template').checked;
+  if(isTemplate){
+    q.template=parseInt(document.getElementById('f_templateNum').value,10);
+    delete q.text;
+  }else{
+    q.text=document.getElementById('f_freeText').value;
+    delete q.template; delete q.word;
+  }
+  q.category=document.getElementById('f_category').value;
+  q.background.category=document.getElementById('f_bgCategory').value;
+  if(!q.background.category && q.background.tags.length===0) delete q.background;
+
+  const effects={yes:{},mostlyYes:{},neutral:{},mostlyNo:{},no:{}};
+  let any=false;
+  q._effectsRows.forEach(row=>{
+    if(!row.target) return;
+    ANSWER_LEVELS.forEach(([k])=>{
+      if(row[k]!==''&&row[k]!=null){effects[k][row.target]=Number(row[k]); any=true;}
+    });
+  });
+  if(any) q.effects=effects; else delete q.effects;
+  delete q._effectsRows;
+
+  if(editingIsNew){questionsData.questions.push(q);}
+  else{questionsData.questions[questionsData._editIndex]=q;}
+  status('保存しました（ローカル保存/全コピーで確定してください）');
+  editingQ=null; showView('listView'); renderList();
+};
+document.getElementById('deleteQBtn').onclick=()=>document.getElementById('delModal').classList.add('open');
+document.getElementById('delCancel').onclick=()=>document.getElementById('delModal').classList.remove('open');
+document.getElementById('delConfirm').onclick=()=>{
+  questionsData.questions.splice(questionsData._editIndex,1);
+  document.getElementById('delModal').classList.remove('open');
+  editingQ=null; showView('listView'); renderList();
+  status('削除しました');
+};
+
+// ---------- template management (lightweight) ----------
+document.getElementById('templateBtn').addEventListener('click',()=>{
+  questionsData.templates = questionsData.templates || {};
+  const lines=Object.entries(questionsData.templates)
+    .map(([n,t])=>`${n}: ${String(t).replace(/\n/g,'\\n')}`).join('\n');
+  const input=prompt(
+    '現在のテンプレート一覧（確認用）。\n新しいテンプレートを追加・更新する場合は「番号,テンプレート文」の形式で入力してください。\n{word}を必ず含めてください。改行は \\n と入力できます。\n\n'+(lines||'（登録なし）'),
+    ''
+  );
+  if(input===null || input.trim()==='') return;
+  const idx=input.indexOf(',');
+  if(idx<0){alert('形式が正しくありません。\n例：6,あなたは\n{word}が\n好き？');return;}
+  const num=input.slice(0,idx).trim();
+  const text=input.slice(idx+1).replace(/\\n/g,'\n');
+  if(!num || !text.includes('{word}')){alert('番号と{word}を含む文を入力してください');return;}
+  questionsData.templates[num]=text;
+  status(`テンプレート${num}を追加/更新しました`);
+});
+
+// ---------- JSON management ----------
+async function loadFromGithub(silent){
+  let ok1=false, ok2=false;
+  try{
+    const res=await fetch('../data/questions.json');
+    if(res.ok){ const data=await res.json(); Object.assign(questionsData, data); renderList(); ok1=true; }
+  }catch(e){}
+  try{
+    const res2=await fetch('../data/characters.json');
+    if(res2.ok){ const data2=await res2.json(); refCharacters=data2.characters||refCharacters; ok2=true; }
+  }catch(e){}
+  if(ok1||ok2) status('GitHubからデータを読み込みました');
+  else if(!silent) status('GitHubからの読込に失敗しました（このツールを実際にリポジトリへ配置してから開いてください）');
+}
+document.getElementById('githubReload').onclick=()=>loadFromGithub(false);
+
+document.getElementById('loadQuestions').addEventListener('change', async (e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{ const data=JSON.parse(await f.text()); Object.assign(questionsData, data); renderList(); status('questions.jsonを読み込みました'); }
+  catch(err){ alert('読み込みに失敗しました: '+err.message); }
+});
+document.getElementById('loadChars').addEventListener('change', async (e)=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{ const data=JSON.parse(await f.text()); refCharacters=data.characters||[]; status('characters.jsonを読み込みました（タグ候補を更新）'); }
+  catch(err){ alert('読み込みに失敗しました: '+err.message); }
+});
+document.getElementById('localSave').onclick=()=>{
+  try{ localStorage.setItem('qMaker_data', JSON.stringify(questionsData)); status('ローカルに保存しました'); }
+  catch(err){ status('ローカル保存に失敗しました'); }
+};
+document.getElementById('localLoad').onclick=()=>{
+  try{ const d=localStorage.getItem('qMaker_data'); if(d){Object.assign(questionsData, JSON.parse(d));} renderList(); status('ローカル保存を読み込みました'); }
+  catch(err){ status('読み込みに失敗しました'); }
+};
+async function copyText(text,label){
+  try{
+    if(navigator.clipboard && window.isSecureContext){
+      await navigator.clipboard.writeText(text);
+      status(label+'をコピーしました');
+      return;
+    }
+  }catch(err){}
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.focus(); ta.select();
+  let ok=false;
+  try{ok=document.execCommand('copy');}catch(err){}
+  ta.remove();
+  if(ok){status(label+'をコピーしました');return;}
+  prompt(label+'（自動コピーできませんでした。手動で全選択してコピーしてください）', text);
+}
+document.getElementById('copyQuestions').addEventListener('click',()=>copyText(JSON.stringify({defaults:questionsData.defaults,templates:questionsData.templates,questions:questionsData.questions},null,2),'questions.json'));
+
+renderList();
+loadFromGithub(true);
+</script>
+</body>
+</html>
